@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each do |line|
+  command = "#{ARGV * ' '} #{line}"
+  puts command
+  # system command
+end

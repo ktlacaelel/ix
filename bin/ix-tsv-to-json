@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+TAB_REGEX = /\t/
+
+STDIN.each_line do |line|
+  output_object = {}
+  fields = line.split(TAB_REGEX)
+  ARGV.each_with_index do |argument, index|
+    output_object[argument] = fields[index]
+  end
+  puts output_object.to_json
+end
+

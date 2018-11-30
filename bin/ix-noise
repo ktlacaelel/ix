@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+$stdout.sync = true
+
+loop do
+  puts (1..100).to_a.shuffle.first
+end

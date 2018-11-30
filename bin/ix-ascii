@@ -1,0 +1,1 @@
+seq 33 126 | ix chr | ix numerate

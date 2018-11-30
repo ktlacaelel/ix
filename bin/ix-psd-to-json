@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'tmpdir'
+require 'psd'
+require 'json'
+
+Dir.mktmpdir do |temporal_directory|
+  data = STDIN.read
+  psd_document_path = "#{temporal_directory}/document.psd"
+  File.open(psd_document_path, 'w+') do |file|
+    file.write(data)
+  end
+  PSD.open(psd_document_path) do |psd|
+    puts psd.tree.to_hash.to_json
+  end
+end

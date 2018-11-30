@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+values = [5, 7, 9, 4, 5, 9, 6]
+
+3.times do |n|
+  15.times do |nn|
+    puts "group-#{n + 1} #{values.shuffle.first}"
+  end
+end
+

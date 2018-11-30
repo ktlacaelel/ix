@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+
+template = "
+<p>
+  <input id='%s' type='checkbox' />
+  <label for='%s'>
+    %s
+  </label>
+</p>
+"
+
+counter = 0
+
+STDIN.each_line do |line|
+  counter += 1
+  id = "item_#{counter}"
+  bindings = []
+  bindings.push(id)
+  bindings.push(id)
+  bindings.push(line.chomp)
+  puts template % bindings
+end

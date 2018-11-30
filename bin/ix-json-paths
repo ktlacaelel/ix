@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+def resolve_type(object)
+  if object.is_a?(Hash)
+    return 'object'
+  end
+  if object.is_a?(String)
+    return 'string'
+  end
+  if object.is_a?(Array)
+    return 'array'
+  end
+  if object.is_a?(Fixnum)
+    return 'integer'
+  end
+  if object.is_a?(TrueClass)
+    return 'boolean'
+  end
+  if object.is_a?(FalseClass)
+    return 'boolean'
+  end
+  if object.is_a?(Float)
+    return 'float'
+  end
+  if object.is_a?(NilClass)
+    return 'null'
+  end
+  return 'unknown'
+end
+
+def parse(hash)
+  result = ''
+  hash.each do |key, value|
+    result << key + ' (' + resolve_type(value) + ")\n"
+    if value.is_a?(Hash)
+      parse(value).each_line do |line|
+        result << "#{key}.#{line}"
+      end
+    end
+  end
+  result
+end
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line)
+    puts parse(hash)
+  rescue => e
+    # puts e.message
+  end
+end
+

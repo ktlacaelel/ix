@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ix scan '\.\w+$' | sed 's/\.//g'

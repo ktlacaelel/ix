@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+PREFIX_REGEX = /^\s+/
+
+LENGTH = (ARGV[0] || 78).to_i
+
+STDIN.each_line do |line|
+  prefix = line.scan(PREFIX_REGEX)[0].to_s
+  puts ''
+  puts "#{prefix}# #{line.gsub(PREFIX_REGEX, '')}"
+  puts "#{prefix}# #{'=' * LENGTH}"
+end
+

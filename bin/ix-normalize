@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+require 'optparse'
+
+@configuration = {}
+
+@configuration[:scale_min] = 0
+@configuration[:scale_max] = 10
+
+OptionParser.new do |opts|
+
+  opts.banner = "USAGE: #{File.basename($0)} [OPTIONS]"
+
+  help_string = 'Minimun value for future scaling normalization.'
+  opts.on('-i', '--min [N]', OptionParser::DecimalInteger, help_string) do |value|
+    @configuration[:scale_min] = value
+  end
+
+  help_string = 'Maximum value for future scaling normalization.'
+  opts.on('-a', '--max [N]', OptionParser::DecimalInteger, help_string) do |value|
+    @configuration[:scale_max] = value
+  end
+
+  opts.on('--extra') do |value|
+    puts "Normalizes numeric data, expects two columns from STDIN:"
+    puts "key and value, key is a string without spaces, value is a number."
+    puts "Original data will printed and suffixed by their corresponding normalized values."
+    exit 0
+  end
+
+end.parse!
+
+
+
+$stdin.sync = true
+
+sample = { }
+
+STDIN.each do |line|
+  key, value = line.split(/\s+/)
+  sample[key] ||= {} 
+  sample[key][:data] ||= []
+  if sample[key][:total]
+    sample[key][:total] += value.to_f
+  else
+    sample[key][:total] = value.to_f
+  end
+  sample[key][:data] << value.to_f
+end
+
+class Array
+  # Future Scaling
+  def normalize(scale_min, scale_max)
+    map do |number|
+      divisor    = (number - min) * (scale_max - scale_min)
+      dividend   = max - min
+      divisor / dividend
+    end
+  end
+end
+
+sample.keys.each do |key|
+  normalized  = sample[key][:data].normalize(@configuration[:scale_min], @configuration[:scale_max])
+  sample[key][:data].size.times do |needle|
+    puts "#{key} #{sample[key][:data][needle]} #{normalized[needle]} "
+  end
+end
+

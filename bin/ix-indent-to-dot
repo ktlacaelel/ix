@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+lines = [];
+
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('readable', function() {
+
+    var input = process.stdin.read();
+    input = input + '';
+    input.split(/\n/).forEach(function (line) {
+        if (line != 'null') { // fix
+            lines.push(line);
+        }
+    });
+
+    ind = lines.map(function (l) { return l.match(/^\s*/)[0].length / 4 })
+
+    lines.forEach(function (l,i){ 
+        if (i == 0) { 
+            return 
+        } 
+        j = i - 1;
+        while(j > -1){ 
+            if(ind[i] - ind[j] === 1){ 
+                console.log('    "'+lines[j].trim()+'" -> "'+lines[i].trim()+'"'); 
+                return 
+            }
+            j--;
+        } 
+    });
+
+
+});
+
+

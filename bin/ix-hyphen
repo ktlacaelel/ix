@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line = line.chomp
+  line.gsub!(/\W+/, ' ')
+  line.gsub!(/\s+/, '-')
+  line.gsub!(/^[-]+|[-]+$/, '')
+  puts line.downcase
+end

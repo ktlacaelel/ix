@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+values = ARGV
+
+STDIN.each_line do |line|
+  words  = line.split(' ')
+  object = {}
+  values.each_with_index do |value, index|
+    object[value] = words[index]
+  end
+  puts object.to_json
+end
+

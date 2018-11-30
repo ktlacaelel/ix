@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'tmpdir'
+
+data = []
+
+STDIN.each_line do |line|
+  data.push(line)
+end
+
+Dir.mktmpdir do |directory|
+  stdin_file = "#{directory}/stdin"
+  File.open(stdin_file, 'w+') do |file|
+    data.each do |line|
+      file.write(line)
+    end
+  end
+  system "vim #{stdin_file}" 
+  puts File.read(stdin_file)
+end
+

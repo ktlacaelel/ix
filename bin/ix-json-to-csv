@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+headers = []
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line)
+    if hash.keys != headers
+      puts ''
+      puts hash.keys * "\t"
+      headers = hash.keys
+    end
+    puts hash.values * "\t"
+  rescue => error
+  end
+end
+

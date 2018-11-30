@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ix reverse | ix transpose | ix tac | ix transpose

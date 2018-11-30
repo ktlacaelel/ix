@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+sum = 0
+
+count = 0
+
+STDIN.each_line do |line|
+  count += 1
+  sum += line.to_i
+end
+
+if count > 0
+  puts (sum / count)
+else
+  puts 'count is zero'
+end
+
+

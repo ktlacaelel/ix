@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+AMOUNT_REGEX = /^[^ ]+/
+
+balance = 0
+
+STDIN.each_line do |line|
+
+  amount = line.scan(AMOUNT_REGEX)[0].to_f
+  description = line.gsub(AMOUNT_REGEX, '')
+  balance += amount
+
+  description.chomp!
+  description.gsub!(/^\s+/, '')
+
+  object = {}
+  object[:description] = description
+  object[:amount] = amount
+  object[:balance] = balance 
+  puts object.to_json
+
+end
+

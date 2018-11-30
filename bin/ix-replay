@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+STDOUT.sync = true
+
+require 'json'
+
+target_key = ARGV[0] || 'timestamp'
+
+previous_time = nil
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+
+    unless previous_time
+      puts line.chomp
+      if object.keys.include?(target_key)
+        previous_time = object[target_key]
+      end
+      next
+    end
+
+    if object.keys.include?(target_key)
+      sleep object[target_key] - previous_time
+      puts line.chomp
+    end
+
+    previous_time = object[target_key]
+
+  rescue => error
+    next
+  end
+end
+

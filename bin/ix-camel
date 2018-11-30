@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line = line.chomp
+  line.gsub!(/\W+/, ' ')
+  line.gsub!(/\s+/, '_')
+  line.gsub!(/^[_]+|[_]+$/, '')
+  line.gsub!(/_/, ' ')
+  line.downcase!
+  words = line.scan(/\w+/)
+  capitalized = words.map do |word|
+    word = word.to_s
+    word[0] = word[0].upcase
+    word
+  end
+  puts capitalized.join('')
+end

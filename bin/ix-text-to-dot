@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+#
+
+puts 'digraph G {'
+
+QUOTED_NODES_REGEX = /("[^"]+")(\s*)("[^"]+")/
+
+template = '"%s" -> "%s"'
+STDIN.each_line do |line|
+  line = line.chomp
+  if line =~ QUOTED_NODES_REGEX
+    list = line.scan(QUOTED_NODES_REGEX)
+    node_a, space, node_b = list[0]
+  else
+    node_a, node_b = line.split(' ')
+  end
+  puts template % [node_a, node_b]
+end
+
+puts '}'
+

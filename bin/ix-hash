@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+puts '{'
+
+STDIN.each_line do |line|
+  key, value = line.chomp.split(' ')
+  puts "  :#{key} => #{value.inspect},"
+end
+
+puts '}'

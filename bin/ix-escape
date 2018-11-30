@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'uri'
+
+STDIN.each_line do |line|
+  puts URI.encode(line.chomp)
+end
+

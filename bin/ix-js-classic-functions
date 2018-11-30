@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+REGEX = /(\([^)(]+\))(\s+=>\s+)/
+
+STDIN.each_line do |line|
+  puts line.gsub(REGEX, 'function \1 ')
+end
+
+

@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+times = ARGV[0].to_i
+
+STDIN.each do |line|
+  times.times do
+    print line
+  end
+end
+

@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+scrappers = []
+results = []
+
+class QuotedUrlScrapper
+  REGEX = /"\w+:\/\/[^"]+"/
+  def initialize(text)
+    @text = text
+  end
+  def get_urls
+    @text.scan(REGEX).map do |url|
+      url.chop!
+      url.reverse.chop.reverse
+    end
+  end
+end
+
+class TextUrlScrapper
+  REGEX = /\w+:\/\/[^\s]+/
+  def initialize(text)
+    @text = text
+  end
+  def get_urls
+    @text.scan(REGEX).map do |url|
+      url.gsub!(/".*/, '')
+      url.gsub!(/'.*/, '')
+    end
+  end
+end
+
+scrappers.push(QuotedUrlScrapper)
+scrappers.push(TextUrlScrapper)
+
+STDIN.each_line do |line|
+  scrappers.each do |scrapper|
+    parser = scrapper.new(line)
+    parser.get_urls.each do |url|
+      results << url
+    end
+  end
+end
+
+results.uniq.each do |url|
+  puts url
+end

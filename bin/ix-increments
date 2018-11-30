@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+NUMBER_REGEX = /\d+/
+
+previous_number = nil
+
+STDIN.each_line do |line|
+  next unless NUMBER_REGEX =~ line
+  number = line.scan(NUMBER_REGEX).first.to_f
+  if previous_number == nil
+    previous_number = number
+  end
+  puts "#{number} #{number - previous_number}"
+  previous_number = number 
+end
+

@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+STDIN.sync = true
+
+shutdown = proc do
+  puts 'bye.'
+  exit 0
+end
+
+trap('QUIT', &shutdown)
+trap('INT', &shutdown)
+trap('TERM', &shutdown)
+trap('KILL', &shutdown)
+
+total_requests = 0
+requests_per_second = 0
+max_requests_received = 0
+
+def cast(number)
+  "#{number}".ljust(8, ' ')
+end
+
+flush = Thread.new do
+  loop do
+    sleep 1
+    template = "unix: %s rps: %s max: %s total: %s"
+    bindings = []
+    bindings.push(Time.now.to_i)
+    bindings.push(cast(requests_per_second))
+    bindings.push(cast(max_requests_received))
+    bindings.push(cast(total_requests))
+    puts (template % bindings)
+    requests_per_second = 0
+  end
+end
+
+read = Thread.new do
+  STDIN.each_line do |line|
+    line = nil
+    total_requests += 1
+    requests_per_second += 1
+    if requests_per_second > max_requests_received
+      max_requests_received = requests_per_second
+    end
+  end
+end
+
+flush.join
+read.join
+

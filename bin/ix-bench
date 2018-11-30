@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts ''
+  puts "log('before: ' + #{line.chomp.inspect})"
+  puts line
+  puts "log(' after: ' + #{line.chomp.inspect})"
+end
+

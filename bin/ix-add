@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+add_amount = ARGV[0].to_i
+
+STDIN.each_line do |line|
+  puts(line.to_i + add_amount)
+end
+

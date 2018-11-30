@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  fname = line.chomp
+  if File.exists?(fname)
+    puts fname
+  end
+end
+

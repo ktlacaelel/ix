@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+options = [:downcase, :upcase]
+
+STDIN.each_char do |char|
+  STDOUT.write(char.send(options.shuffle.first))
+end
+
+

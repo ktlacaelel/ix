@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+ix shuffle | tail -1
+

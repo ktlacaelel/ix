@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+STDIN.each_line do |line|
+  if line.include?('}')
+    hash = JSON.parse(line)
+    copy = {}
+    ARGV.each do |key|
+      copy[key] = hash[key]
+    end
+    puts copy.to_json
+  end
+end
+

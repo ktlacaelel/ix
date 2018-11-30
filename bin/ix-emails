@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+EMAIL_REGEX = /[^ ]+@[^ ]+/i
+
+STDIN.each_line do |line|
+  next unless line =~ EMAIL_REGEX
+  emails = line.scan(EMAIL_REGEX)
+  puts emails[0]
+end
+

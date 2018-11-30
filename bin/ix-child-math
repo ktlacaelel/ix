@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+standard = '0123456789'
+children = '1000101021'
+
+STDIN.each_line do |line|
+  line = line.chomp
+  puts line.chomp.tr(standard, children)
+end
+

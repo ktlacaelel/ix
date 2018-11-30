@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts line.to_f - ARGV[0].to_f
+end

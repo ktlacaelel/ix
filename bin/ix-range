@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+range_opening = ARGV[0].to_i
+range_closing = ARGV[1].to_i
+
+(range_opening..range_closing).to_a.each do |number|
+  puts number
+end
+

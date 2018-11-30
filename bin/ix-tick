@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+$running = true
+
+STDOUT.sync = true
+
+shutdown = proc do
+  $running = false
+  $stderr.puts 'bye.'
+end
+
+trap('INT', &shutdown)
+trap('QUIT', &shutdown)
+trap('TERM', &shutdown)
+
+STDIN.each_line do |line|
+  puts line.chomp
+  sleep (ARGV[0] || 1).to_i  
+  break unless $running
+end

@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+require 'hirb'
+
+hashes = []
+
+STDIN.each_line do |line|
+  if line.include? '}'
+    hash = JSON.parse(line)
+    hashes.push(hash)
+  end
+end
+
+vertical = false
+if ARGV[0] == '-v'
+  vertical = true
+end
+
+puts Hirb::Helpers::Table.render(hashes, :resize => false, :vertical => vertical)

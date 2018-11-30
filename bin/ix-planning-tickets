@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+feature = ARGV[0] || 'FEATURE'
+
+list = []
+
+STDIN.each_line do |line|
+  list.push(line.chomp)
+end
+
+derivates = []
+derivates.push('Specification')
+derivates.push('Implement')
+derivates.push('Test on Local')
+derivates.push('Test on Staging')
+derivates.push('Test on Production')
+
+if ARGV.size > 1
+  puts ARGV.size
+  derivates = ARGV[1..(ARGV.size - 1)]
+end
+
+derivates.each do |derivate|
+  list.each do |string|
+    puts "#{feature}: #{derivate}: #{string}"
+  end
+end

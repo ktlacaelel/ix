@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ix json-paths | awk '{print $2, $1}' | column -t

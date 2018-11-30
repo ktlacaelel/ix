@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+regex = /\s+$/
+
+STDIN.each_line do |line|
+  if line =~ regex
+    puts line.gsub(regex, '')
+    next
+  end
+  $stdout.write line
+end

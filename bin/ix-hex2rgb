@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# transforms hex code into rgb decimal values.
+
+sed 's/#//g' | ix scan '..' | ix downcase | ix base 16

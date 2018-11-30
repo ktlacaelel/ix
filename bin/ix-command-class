@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+attributes = ARGV[1..(ARGV.size - 1)]
+
+template = attributes.map do |attribute|
+  "%<#{attribute}>s"
+end
+
+template = (template * ' ').inspect
+
+puts "class #{ARGV[0]}"
+  puts "ATTRIBUTES = #{attributes.inspect}"
+  puts "TEMPLATE = #{template}"
+  attributes.each do |attribute|
+    puts "  attr_accessor :#{attribute}"
+  end
+  puts "def to_s"
+  puts "end"
+  puts "def execute"
+  puts "end"
+puts "end"

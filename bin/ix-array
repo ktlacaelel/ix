@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+array = []
+
+STDIN.each_line do |line|
+  item = line.chomp
+  if item =~ /^\d+$/
+    item = item.to_i
+  end
+  array << item
+end
+
+puts '['
+array.each do |item|
+  puts '  ' + item.inspect + ','
+end
+puts ']'

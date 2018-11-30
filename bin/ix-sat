@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+puts "total\tsubtotal\tiva"
+STDIN.each_line do |line|
+  total = line.to_f
+  subtotal = total / 1.16
+  iva = subtotal * 0.16
+  puts "#{total}\t#{subtotal}\t#{iva}"
+end
+

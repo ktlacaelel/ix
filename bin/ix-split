@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line.chomp.split(Regexp.new(ARGV[0])).each do |chunk|
+    puts chunk
+  end
+end
+
+

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+ix join '\|' | ix prefix "'" | ix suffix "'"
+

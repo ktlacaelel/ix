@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+banner -w 30 | ix box2 | ix transpose | ix tac

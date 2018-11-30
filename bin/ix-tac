@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+lines = []
+
+STDIN.read.each_line do |line|
+    lines << line
+end
+
+lines.reverse.each do |line|
+  puts line
+end

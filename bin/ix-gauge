@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+# Percentage bar.
+#
+# items  = (1..100).to_a
+# size   = (10..100).to_a
+# length = size.shuffle.first
+# 
+# items.each do |item|
+#   puts Percentage.new(100, item, length).to_bar
+# end
+#
+class Percentage
+  def initialize(product, divisor, scale = 100)
+    @product        = product
+    @scale          = scale - 5
+    @pre_percentage = (divisor * @scale / product).to_f
+    @percentage     = (@pre_percentage * 100 / @scale)
+    @divisor        = divisor
+  end
+  def to_i
+    @percentage.to_i
+  end
+  def to_f
+    @percentage.to_f
+  end
+
+  # 0   ~  50   green
+  # 50  ~  80   yellow
+  # 80  ~  100  red
+  def to_bar(color = true, bar = '|')
+    filling = (bar * @pre_percentage.to_f)
+    padding = 0
+    if color
+      if to_i >= 0 and to_i < 50
+        filling = "[0;32;1m" + (bar * @pre_percentage.to_i) + "[0m"
+      end
+      if to_i >= 50 and to_i < 80
+        filling = "[0;33;1m" + (bar * @pre_percentage.to_i) + "[0m"
+      end
+      if to_i >= 80
+        filling = "[0;31;1m" + (bar * @pre_percentage.to_i) + "[0m"
+      end
+      if filling.size > 0
+        padding = 13
+      end
+    end
+    bindings = [filling, to_f, '%', @divisor]
+    "[%-#{@scale + padding}s%5.1f%s] %10.2f " % bindings
+  end
+end
+
+max      = ARGV[0].to_f
+behavior = ARGV[1].to_i # 0 update, 1 print
+
+$stdout.sync = true
+
+$break = false
+
+trap('INT') do
+  $break = true
+end
+
+at_exit do
+  puts ''
+end
+
+STDIN.each_line do |line|
+  break if $break
+  if behavior == 0
+    sleep 0.01
+    print "\b" * 100
+    print Percentage.new(max, line.to_f, 50).to_bar
+  else
+    puts Percentage.new(max, line.to_f, 50).to_bar
+  end
+end
+

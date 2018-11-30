@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+require 'nokogiri'
+require 'open-uri'
+
+class Mock
+  attr_accessor :title
+end
+
+counter = 0
+
+template = '
+    <tr>
+      <td>
+        <a href="%s">
+          <img src="%s" width="200" />
+        </a>
+      </td>
+      <td style="">
+        <div>
+        %s - <a href="%s"> %s </a>
+        </div>
+      </td>
+    </tr>
+'
+
+puts '
+<style>
+  td {
+    border:solid 1px whitesmoke;
+  }
+</style>
+'
+puts '<table>'
+STDIN.each_line do |line|
+  next if line.chomp == ''
+  counter += 1
+  url = line.chomp
+  begin
+    doc = Nokogiri::HTML(open(url))
+  rescue => e
+    doc = Mock.new
+    doc.title = url
+  end
+  unless doc.title
+    doc = Mock.new
+    doc.title = url
+  end
+
+  begin
+
+  image_source = ''
+  doc.traverse do |element|
+    break if image_source != ''
+    if element.name == 'img'
+      image_source = element['src']
+    end
+  end
+
+  rescue => error
+    $stderr.puts error.message
+  end
+
+  bindings = [url, image_source, counter, url, doc.title]
+  puts template % bindings
+
+end
+puts '</table>'
+

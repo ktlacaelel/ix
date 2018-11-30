@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+require 'nokogiri'
+require 'open-uri'
+
+class Mock
+  attr_accessor :title
+end
+
+counter = 0
+
+STDIN.each_line do |line|
+  next if line.chomp == ''
+  counter += 1
+  url = line.chomp
+  begin
+    doc = Nokogiri::HTML(open(url))
+  rescue => e
+    doc = Mock.new
+    doc.title = url
+  end
+  unless doc.title
+    doc = Mock.new
+    doc.title = url
+  end
+  template = "%s - %s\n%s\n\n"
+  title = doc.title
+  title.chomp!
+  title.gsub!(/\n/, '')
+  title.gsub!(/^\s+/, '')
+  title.gsub!(/\s+$/, '')
+  bindings = [counter, title, url]
+  puts template % bindings
+end

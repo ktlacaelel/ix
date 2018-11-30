@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+File.open('/tmp/ix-pbcopy', 'w+') do |file|
+  STDIN.each_line do |line|
+    file.print line.chomp
+  end
+end
+
+system 'cat /tmp/ix-pbcopy | pbcopy'

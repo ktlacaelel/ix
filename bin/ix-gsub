@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts line.gsub(/#{ARGV[0]}/, ARGV[1])
+end

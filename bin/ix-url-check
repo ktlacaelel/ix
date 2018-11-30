@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+
+$running = true
+
+trap('INT') { $running = false }
+
+STDIN.each do |line|
+
+  break unless $running
+
+  begin
+
+    uri = URI(line.chomp)
+    start = Time.now.to_f
+    res = Net::HTTP.get_response(uri)
+    finish = Time.now.to_f
+    bench = (finish - start)
+    puts "#{res.code} #{uri}"
+  rescue => e
+    puts "ERROR: #{e.message} #{uri}"
+  end
+end
+

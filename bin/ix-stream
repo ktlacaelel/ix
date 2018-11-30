@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+chunks = ARGV[0].to_i
+interval = ARGV[1].to_i
+counter = 0
+
+STDIN.each_line do |line|
+  counter += 1
+  puts line.chomp
+
+  if counter == chunks
+    counter = 0
+    sleep interval
+  end
+end

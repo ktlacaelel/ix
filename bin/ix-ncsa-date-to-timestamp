@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'time'
+
+STDIN.each_line do |line|
+
+  day, year, hour, minute, second, timezone = line.scan(/\d+/)
+  month = line.scan(/\/[^0-9]\w+/)[0].scan(/\w+/)[0]
+
+  day = day.to_i
+  year = year.to_i
+  hour = hour.to_i
+  minute = minute.to_i
+  second = second.to_i
+
+  # puts line.inspect
+  # puts [day, month, year, hour, minute, second, timezone].inspect
+
+  time = Time.parse("#{year}-#{month}-#{day} #{hour}:#{minute}:#{second}", timezone)
+
+  # puts time.tv_sec
+
+    puts "[ 'not', new Date(#{time.year}, #{time.month}, #{time.day}, #{time.hour}, #{time.min}, #{time.sec}), new Date(#{time.year}, #{time.month}, #{time.day}, #{time.hour}, #{time.min}, #{time.sec}) ],"
+
+  
+end
+

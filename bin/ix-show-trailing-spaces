@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  spaces = line.gsub(/([ ]+$)/, "\\1\e[0;0;44m<--- space\e[0m")
+  tabs = spaces.gsub(/(\t+$)/, "\\1\e[0;0;41m<--- tab\e[0m")
+  print tabs
+end

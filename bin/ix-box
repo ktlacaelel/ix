@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+def boxify(string)
+  join    = '+'
+  frame   = '-'
+  wall    = '|'
+  width   = 0
+  height  = 0
+  string.each_line do |line|
+    if line.size > width
+      width = line.chomp.size
+    end
+    height += 1
+  end
+  puts "#{join}#{frame}#{frame * width}#{frame}#{join}"
+  string.each_line do |line|
+    puts "#{wall} #{line.chomp}#{' ' * (width - line.chomp.size)} #{wall}" 
+  end
+  puts "#{join}#{frame}#{frame * width}#{frame}#{join}"
+end
+
+box = ARGV[0] == '-b'
+
+if box
+  text = ''
+  STDIN.each_line do |line|
+    text << line
+  end
+  boxify(text)
+else
+  STDIN.each_line do |line|
+    boxify(line.chomp)
+  end
+end
+

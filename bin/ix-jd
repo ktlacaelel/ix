@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+
+if ARGV[0]
+  location = ARGV[0]
+else
+  location = 'Guadalajara'
+end
+
+date = Time.now
+
+puts date.strftime("%A %B %d %Y #{location} - #{date.to_i}")
+

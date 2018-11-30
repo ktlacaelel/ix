@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+# http://stackoverflow.com/questions/9822078/ruby-compare-two-strings-similarity-percentage
+
+def string_difference_percent(a, b)
+  longer = [a.size, b.size].max
+  same = a.each_char.zip(b.each_char).select { |a,b| a == b }.size
+  (longer - same) / a.size.to_f
+end
+
+lines = []
+
+STDIN.each_line do |line|
+  lines.push(line.chomp)
+end
+
+scores = {}
+
+target_line = lines.shift
+
+puts "00 - Comparing: #{target_line}"
+
+lines.each do |line|
+  score = string_difference_percent(target_line, line)
+  scores[score] ||= []
+  scores[score].push(line)
+end
+
+scores.keys.sort.reverse.each do |score|
+  puts ''
+  scores[score].each do |line|
+    puts "\t#{score} #{line}"
+  end
+end
+

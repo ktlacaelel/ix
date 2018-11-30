@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+# /dev/xvdi       2.9T  1.2T  1.7T  42% /ebs/stage-new
+
+STDIN.each_line do |line|
+  puts ''
+  chunks = line.chomp.split(/\s+/)
+  puts "Device: #{chunks[0]}"
+  puts "Total Size: #{chunks[1]}"
+  puts "Space Used: #{chunks[2]}"
+  puts "Space Available: #{chunks[3]}"
+  puts "Percentage Used: #{chunks[4]}"
+  puts "Mount Point: #{chunks[5]}"
+end
+

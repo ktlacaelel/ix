@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+the_list = []
+
+STDIN.each_line do |line|
+  object = JSON.parse(line)
+  the_list.push(object)
+end
+
+puts the_list.to_json
+

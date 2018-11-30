@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+    symbolized_object = {}
+    object.each do |k, v|
+      symbolized_object[k.to_sym] = v
+    end
+    puts format(ARGV[0], symbolized_object)
+  rescue => error
+  # $stderr.puts error.message
+  end
+end
+

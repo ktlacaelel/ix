@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+require 'csv'
+
+STDIN.each_line do |line|
+  CSV.parse(line.force_encoding("iso-8859-1").encode("utf-8")) do |row|
+    object = {}
+    row.size.times do |column|
+      key = ARGV[column] || "column-#{column}"
+      object[key] = row[column]
+    end
+    puts object.to_json
+  end
+end

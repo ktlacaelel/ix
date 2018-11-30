@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+# Usage: catafter [pattern]
+
+unless ARGV[0]
+  $stderr.puts 'give me a pattern.'
+  exit 1
+end
+
+pattern = Regexp.new ARGV[0]
+
+flag = false
+
+STDIN.each do |line|
+  flag = true if line =~ pattern
+  puts line if flag
+end
+

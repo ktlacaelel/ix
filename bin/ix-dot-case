@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+def to_dot_case(string)
+  string.gsub!('_', ' ')
+  words = string.scan(/\w+/)
+  words.map! do |word|
+    word.downcase
+  end
+  words * '.'
+end
+
+STDIN.each_line do |line|
+  puts to_dot_case(line.chomp!)
+end
+

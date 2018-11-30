@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+template_1 = "%s%s.step('%s')(function (step) {\n%s});\n"
+template_2 = "%s%s.step('%s').dependsOn('%s')(function (step) {\n%s});\n"
+
+WHITESPACE_REGEX = /^\s+/
+
+target_template = template_1
+previus_step = nil
+
+flow = ARGV[0] || 'flow'
+
+STDIN.each_line do |line|
+  line.chomp!
+  whitespace_prefix = line.scan(WHITESPACE_REGEX)[0]
+  step_name = line.gsub(WHITESPACE_REGEX, '')
+  previus_step ||= whitespace_prefix
+  puts (target_template % [whitespace_prefix, flow, step_name, previus_step, whitespace_prefix])
+  target_template = template_2
+  previus_step = step_name
+end
+

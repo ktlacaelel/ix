@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+
+  if File.exists?(line.chomp)
+    puts "yes #{line.chomp}"
+  else
+    puts " no #{line.chomp}"
+  end
+end
+

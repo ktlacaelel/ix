@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+class Attribute
+  attr_accessor :name
+  attr_accessor :space
+  def initialize(name, space)
+    @name = name
+    @space = space
+  end
+  def to_s
+    raise 'child must implement'
+  end
+end
+
+class SimpleMethod < Attribute
+  def to_s
+    "\n#{space}def #{name}\n#{space}end"
+  end
+end
+
+names = []
+objects = []
+
+STDIN.each_line do |line|
+  name = line.chomp
+  space =  name.scan(/^\s+/)[0].to_s
+  name = name.gsub(/^\s+/, '')
+  name = name.gsub(/\W+/, '_')
+  name = name.downcase
+  names.push(name)
+  objects.push(SimpleMethod.new(name, space))
+end
+
+names.sort.each do |name|
+  objects.each do |object|
+    if object.name == name
+      puts object
+    end
+  end
+end

@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts "#{'%20.6f' % Time.now.to_f} #{line}"
+end

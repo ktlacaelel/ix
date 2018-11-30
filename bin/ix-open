@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  command = line.chomp
+  next if command =~ /^\s*$/
+  command.gsub!(/^\s+/, '')
+  system "open #{command.inspect}"
+end
+

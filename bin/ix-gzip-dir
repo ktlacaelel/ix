@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+target_dir=$1
+
+if [ -d "$target_dir" ]; then
+    echo "Will Compress files in dir: $target_dir"
+else
+    echo "Given directory does not exist!"
+    exit 1
+fi
+
+gzip_bin=`which gzip`
+
+if [ -x "$gzip_bin" ]; then
+    echo "You have gzip!"
+else
+    echo "No Gzip found!"
+    exit 1
+fi
+
+for target_file in $(ls $target_dir); do
+    if [[ "$target_dir/$target_file" == *".gz" ]]; then
+        echo "skip: $target_dir/$target_file"
+    else
+        if [ -f "$target_dir/$target_file.gz" ]; then
+            echo "gz exists: $target_file ~> $target_dir/$target_file.gz"
+        else
+            echo "compress: $target_dir/$target_file > $target_dir/$target_file.gz"
+            gzip -c $target_dir/$target_file > $target_dir/$target_file.gz
+        fi
+    fi
+done
+

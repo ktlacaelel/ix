@@ -1,0 +1,179 @@
+#!/usr/bin/env ruby
+
+WORDS_REGEX = /[a-zA-Z]+/
+EMPTY_LINE = /^\s+$/
+USEFUL_OPTIONS = []
+
+class String
+
+  def ucword
+    result = ''
+    count = 0
+    each_char.each do |char|
+      count += 1
+      if count == 1
+        result << char.upcase
+      else
+        result << char.downcase
+      end
+    end
+    result
+  end
+
+  def ucword!
+    replace ucword
+  end
+
+  def chars
+    scan(/./)
+  end
+
+end
+
+class UsefulOption
+
+  def self.short_flags
+    @short_flags ||= [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "h"
+    ]
+  end
+
+  def initialize(words_array)
+    unless words_array.is_a?(Array)
+        raise "not a valid option: #{words_array}"
+    end
+    if words_array.size == 0
+        raise "empty option: #{words_array.inspect}"
+    end
+    @words_array = words_array
+  end
+
+  def _find_and_assign_short_flag_from_chars(chars)
+    found = false
+    selected_char = nil 
+
+    chars.each do |char|
+      unless self.class.short_flags.include?(char)
+        self.class.short_flags.push(char)
+        selected_char = char
+        found = true
+        break
+      end
+    end
+
+    [found, selected_char]
+  end
+
+  def to_short_flag
+    selected_char = nil
+    found = false
+
+    @words_array.each do |word|
+      found, selected_char = _find_and_assign_short_flag_from_chars(word.downcase.chars)
+      break if found
+    end
+    
+    unless found
+      found, selected_char = _find_and_assign_short_flag_from_chars(('a'..'z').to_a)
+    end
+
+    unless found
+      $stderr.puts "Cant assing short flag!"
+      $stderr.puts "Probably using too many opts?"
+      $stderr.puts self.class.short_flags.inspect
+      exit 1
+    end
+
+    '-' + selected_char
+  end
+
+  def to_long_flag
+    words = @words_array.dup
+    words.map! do |word|
+      word.downcase
+    end
+    '--' + (words * '-')
+  end
+
+  def to_symbol
+    words = @words_array.dup
+    words.map! do |word|
+      word.downcase
+    end
+    ':' + (words * '_')
+  end
+
+  def to_description
+    words = @words_array.dup
+    words.map! do |word|
+      word.downcase
+    end
+    words.first.ucword!
+    (words * ' ') + '.'
+  end
+
+  def to_optparse
+    string = ''
+    string << "  opts.on('#{to_short_flag}', '#{to_long_flag}', '#{to_description}') do |value|\n"
+    string << "    options[#{to_symbol}] = value\n"
+    string << "  end\n"
+    string << "\n" 
+    string
+  end
+
+end
+
+STDIN.each_line do |line|
+  next if line =~ EMPTY_LINE
+  words = line.scan(WORDS_REGEX)
+  option = UsefulOption.new(words)
+  USEFUL_OPTIONS.push(option)
+end
+
+puts "require 'optparse'"
+puts ""
+puts "options = {}"
+puts ""
+puts "OptionParser.new do |opts|"
+puts ""
+puts "  opts.banner = \"Usage: \#{$0} [OPTIONS]\""
+puts ""
+
+USEFUL_OPTIONS.each do |option|
+  puts option.to_optparse
+end
+
+puts ""
+puts "end.parse!"
+puts ""
+
+puts "p options"
+puts "p ARGV"
+puts ""
+

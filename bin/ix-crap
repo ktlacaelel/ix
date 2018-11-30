@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+regex = /[a-z0-9A-Z]+/
+
+replace = ARGV[0] || 'crap'
+
+needle = 0
+
+upper_case_chars = ('A'..'Z').to_a
+
+STDIN.each_char do |char|
+  if char =~ regex
+    if upper_case_chars.include?(char)
+      print replace[needle].upcase
+    else
+      print replace[needle]
+    end
+    needle += 1
+    if needle == replace.size
+      needle = 0
+    end
+  else
+    print char
+  end
+end
+

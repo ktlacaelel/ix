@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+extend = false
+
+if ARGV[0] == '-e'
+  extend = true
+end
+
+Dir.glob('**/*.rb').each do |file|
+  system "git blame #{file}  | awk '{print $2}' | sort | uniq -c  | sort -n | sed 's/(//g' | ix swap > /tmp/blamer.cache"
+  if extend
+    output = `cat /tmp/blamer.cache | ix percentage`
+    puts file
+    output.each_line do |line|
+      puts "        #{line}"
+    end
+    puts ''
+    next
+  end
+  percent = `cat /tmp/blamer.cache | ix percentage | tail -2 | head -1`
+  puts "#{percent.chomp} #{file}"
+end
+

@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line)
+    hash.keys.each do |key|
+      puts "#{key}\t#{hash[key]}"
+    end
+  rescue => error
+    puts error.message
+  end
+end

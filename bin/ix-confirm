@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+commands = []
+
+File.read(ARGV[0]).each_line do |line|
+  commands.push(line.chomp)
+end
+
+commands.each do |command|
+
+  puts "confirm: #{command}"
+
+  x = gets
+
+  puts x
+
+  # puts "Confirm (abort, skip, yes, or y): #{command} "
+
+  # puts "response: #{response.inspect}"
+
+  # next
+
+  # if response == "abort\n"
+  #   puts 'Exiting now..'
+  #   exit 0
+  # end
+
+  # if response == "skip\n"
+  #   puts 'Skipping..'
+  #   next
+  # end
+
+  # if response == "yes\n"
+  #   puts 'Executing..'
+  #   system command
+  #   next
+  # end
+
+  # if response == "y\n"
+  #   puts 'Executing..'
+  #   system command
+  #   next
+  # end
+
+  # puts 'doing nothing..'
+
+end

@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts "#{Time.now} #{line.chomp}"
+end
+

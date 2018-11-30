@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+STDIN.each_line do |line|
+  $stdout.write line.chomp
+end
+

@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'isna'
+
+colors = [:green, :red]
+
+index = 1
+
+STDIN.each_line do |line|
+  index = (index != 0) ? 0 : 1 
+  if index == 0
+    puts line.chomp.to_ansi.negative.send(colors[index]).to_s
+  else
+    puts line.chomp.to_ansi.normal.send(colors[index]).to_s
+  end
+end
+

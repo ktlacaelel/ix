@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+matcher = ARGV[0]
+regex   = Regexp.new(matcher)
+
+STDIN.each_line do |line|
+  line = line.chomp
+  line.scan(regex).each do |match|
+    puts match
+  end
+end
+

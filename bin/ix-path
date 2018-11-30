@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+WORDS_REGEX = /\w+/
+
+STDIN.each_line do |line|
+  words = line.scan(WORDS_REGEX)
+  puts File.join(*words)
+end

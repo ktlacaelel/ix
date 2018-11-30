@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+target = ARGV[0].to_i
+
+STDIN.each_line do |line|
+  puts ''
+  puts 'node = ClusterNode.new'
+  puts "node.ip = #{line.chomp.inspect}"
+  puts "node.target = 'fusion#{target}'"
+  puts "node.name = 'Fusion Render Node #{target}'"
+  puts "node.enabled = false"
+  puts "node.save!"
+  target += 1
+end
+

@@ -1,0 +1,1 @@
+ix json-key _timestamp message | ix timestamp 1000

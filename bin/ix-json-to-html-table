@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+require 'cgi'
+
+def html_list(array)
+  output = []
+  output.push('<ol>')
+  array.each do |item|
+    output.push('<li>')
+    if item.is_a?(Hash)
+      output.push(html_table(item))
+    else
+      output.push(CGI::escapeHTML(item.to_s))
+    end
+    output.push('</li>')
+  end
+  output.push('</ol>')
+  (output * "\n")
+end
+
+def flip_flop(values)
+  raise 'hell: values is not an array' unless values.is_a?(Array)
+  @index = 0 unless @index
+  if @index < (values.size - 1)
+    @index += 1
+  else 
+    @index = 0
+  end
+  # puts "#{@index} -> #{values[@index]}"
+  values[@index]
+end 
+
+def html_table(hash)
+  output = []
+  output.push('<table>')
+  hash.keys.each do |key|
+    value = hash[key]
+    output.push('<tr>')
+    output.push('<td class="zebra_header">')
+    output.push("#{key} (#{value.class})")
+    output.push('</td>')
+    output.push('<td class="' + flip_flop(['zebra_light', 'zebra_dark']) + '">')
+    if value.is_a?(Hash)
+      output.push(html_table(value))
+    elsif value.is_a?(Array)
+      output.push(html_list(value))
+    else
+      output.push(CGI::escapeHTML(value.to_s))
+    end
+    output.push('</td>')
+    output.push('</tr>')
+  end
+  output.push('</table>')
+  output.push('<br />')
+  (output * "\n")
+end
+
+puts '
+<style>
+.zebra_dark {
+    background: whitesmoke;
+}
+.zebra_light {
+    background: white;
+}
+.zebra_header {
+    background: darkgray;
+    font-color: white;
+}
+td {
+    padding: 1mm;
+}
+</style>
+'
+
+STDIN.each do |line|
+  begin
+    hash = JSON.parse(line)
+    puts html_table(hash)
+  rescue => error
+  end
+end

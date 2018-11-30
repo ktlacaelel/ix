@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+regex = /^\w+/
+prefix = 'n/a'
+
+STDIN.each_line do |line|
+
+  if line =~ regex
+    prefix = line
+    next
+  end
+
+  item = line.gsub(/^\s+/, '')
+  item = item.chomp
+
+  array = []
+  array.push(prefix.chomp)
+  array.push(item)
+
+  puts array.join("\t")
+
+end
+

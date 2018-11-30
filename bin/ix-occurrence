@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line = line.chomp
+  size = line.scan(/#{ARGV[0]}/).to_a.size
+  puts "%6d %s" % [size, line]
+end
+

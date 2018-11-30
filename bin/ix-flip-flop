@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+# 6.times do |n|
+#   puts flip_flop(['dark', 'light'])
+# end
+def flip_flop(values)
+  raise 'hell: values is not an array' unless values.is_a?(Array)
+  @index = -1 unless @index
+  if @index < (values.size - 1)
+    @index += 1
+  else
+    @index = 0
+  end
+  # puts "#{@index} -> #{values[@index]}"
+  values[@index]
+end
+
+STDIN.each_line do |line|
+ puts "#{flip_flop(ARGV)} #{line}" 
+end

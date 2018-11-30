@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+rot13  = "cdefghijklmnopqrstuvwxyzabCDEFGHIJKLMNOPQRSTUVWXYZAB"
+
+STDIN.each_line do |line|
+  puts line.tr!(normal, rot13)
+end
+

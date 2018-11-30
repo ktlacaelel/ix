@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+data = ''
+
+STDIN.each_line do |line|
+  data << line
+end
+
+hash = eval(data)
+
+def format(hash, level = 1)
+  padding_string = '  '
+  indent = (padding_string * (level - 1))
+  result = ''
+  result << "#{indent}{\n" 
+  indent = (padding_string * (level))
+  hash.keys.sort.each do |key|
+    if hash[key].is_a?(Hash)
+      result << "\n"
+      result << "#{indent}#{key.inspect} => #{format(hash[key], level + 1)} \n"
+      result << "\n"
+    else
+      result << "#{indent}#{key.inspect} => #{hash[key].inspect}, \n"
+    end
+  end
+  indent = (padding_string * (level - 1))
+  result << "#{indent}}" 
+  result << ',' if level > 1
+  result
+end
+
+
+puts format(hash)
+
+
+# TODO: namespace, custom type objects, delegation
+#
+# must expect one hash per line.
+# must detect object within arrays.
+# must padd array contents.
+# must dump array one per line or expand in case of objects.
+# must detect string new lines.
+# must receive flag for string indentation (default to false?)
+# must dump keys in alphabetic order
+#
+# Formatter::Base
+# Formatter::String < Formatter::Base
+# Formatter::Integer < Formatter::Base
+# Formatter::Array < Formatter::Base
+# Formatter::Hash < Formatter::Base
+#
+# class Formatter::Base
+#   def serialize(indent)
+#     raise 'child must implement'
+#   end
+# end
+#
+# basic object overrides/extensions.
+# "".to_formatter #=> Formatter::String
+# "".to_formatter.serialize(1) #=> String
+#

@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+$running = true 
+
+trap('INT') do
+  $running = true
+end
+
+STDIN.each_line do |line|
+  break unless $running
+  command = line.chomp
+  puts
+  puts "command: #{command}"
+  system command
+end

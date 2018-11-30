@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts "[#{line.chomp}]"
+  puts "  | 1. ."
+  puts "  V"
+end

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash 
+
+ix-indent 'execute ' executed:error '    '
+
+# INDENT_REGEX = /execute /
+# OUTDENT_REGEX = /executed|error/
+# INDENT_STR   = '    '
+# 
+# multiplier = 0
+# 
+# STDIN.each_line do |line|
+#   if line =~ OUTDENT_REGEX
+#     multiplier -= 1
+#   end
+#   puts "#{INDENT_STR * multiplier} #{line}"
+#   if line =~ INDENT_REGEX
+#     multiplier += 1
+#   end
+# end
+# 

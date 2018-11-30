@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo '# http://www.webgraphviz.com/'
+echo 'digraph json {'
+ix json-paths-pretty | awk '{print $2}' | ix prefix '  root.' | sed 's/\./ -> /g' | ix suffix ';'
+echo '}'

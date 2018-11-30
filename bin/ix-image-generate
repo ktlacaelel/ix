@@ -1,0 +1,1 @@
+echo "https://placeholdit.imgix.net/~text?txtsize=33&txt=$1%C3%97$2&w=$1&h=$2"

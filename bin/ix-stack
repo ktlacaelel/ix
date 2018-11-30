@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+
+STDIN.each do |line|
+  chunks = line.split(':')
+  file = chunks[0]
+  line_number = chunks[1].to_i
+  spacer = file.scan(/^\s*/)[0]
+  file.gsub!(/^\s+/, '')
+  unless File.exists? file
+    puts line
+    next
+  end
+
+  if File.directory? file
+    puts line
+    next
+  end
+
+  puts ''
+  puts line.chomp
+  puts "#{spacer}vim +#{line_number} #{file}"
+  data = File.read(file)
+  counter = 0
+  data.each_line do |line|
+    counter += 1
+    if counter > line_number -10
+      if counter < line_number +10
+        if counter == line_number
+          puts "#{spacer}[0;32;1m" + counter.to_s.rjust(8, ' ') + " #{line.chomp}[0m"
+        else
+          puts spacer +counter.to_s.rjust(8, ' ') + " #{line}"
+        end
+      end
+    end
+  end
+
+end
+

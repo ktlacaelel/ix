@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+unless ARGV[0]
+  $stderr.puts "Please provide a list of indender strings"
+  $stderr.puts "(separated by a colon character) as argv 1"
+  exit 1
+end
+
+unless ARGV[1]
+  $stderr.puts "Please provide a list of outdenter strings"
+  $stderr.puts "(separated by a colon character) as argv 2"
+  exit 1
+end
+
+unless ARGV[2]
+  $stderr.puts "Please provide a string to indent with"
+  $stderr.puts "as argv 3"
+  exit 1
+end
+
+indenters  = ARGV[0].split(':')
+outdenters = ARGV[1].split(':')
+
+INDENT_REGEX  = /#{indenters * '|'}/
+OUTDENT_REGEX = /#{outdenters * '|'}/
+INDENT_STR    = "#{ARGV[2]}"
+
+multiplier = 0
+
+STDIN.each_line do |line|
+  if line =~ OUTDENT_REGEX
+    multiplier -= 1
+    if multiplier < 0
+      multiplier = 0
+    end
+  end
+  puts "#{INDENT_STR * multiplier} #{line}"
+  if line =~ INDENT_REGEX
+    multiplier += 1
+  end
+end
+

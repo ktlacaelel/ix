@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+
+require 'json'
+
+
+key = ARGV[0]
+value = ARGV[1]
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line)
+    hash[key] = value
+    puts hash.to_json
+  rescue => error
+  end
+end

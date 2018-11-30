@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'lemmatizer'
+
+lemmatizer = Lemmatizer.new
+
+STDIN.each_line do |line|
+  words = line.scan(/\w+/)
+  words.each do |word|
+    lemma = lemmatizer.lemma(word)
+    # puts "#{word} => #{lemma}"
+    puts lemma
+  end
+end
+
+

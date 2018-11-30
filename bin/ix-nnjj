@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+STDIN.each do |line|
+  adjectives = line.scan(/JJ (\w+)/)
+  nouns      = line.scan(/NN (\w+)/)
+  if adjectives.size > 0
+    adjectives.each do |adjective|
+      puts "adjective: #{adjective[0]}"
+    end
+  end
+  if nouns.size > 0
+    nouns.each do |noun|
+      puts "noun: #{noun[0]}"
+    end
+  end
+end

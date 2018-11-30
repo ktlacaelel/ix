@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'isna'
+
+colors = [:green, :black, :red, :black]
+
+STDIN.each_line do |line|
+  needle = 0
+  prefix = line.scan(/^\s+/)[0]
+  words = line.split(' ')
+  print prefix
+  words.each do |word|
+    print word.to_ansi.send(colors[needle]).to_s + ' '
+    needle += 1
+    if needle > colors.size - 1
+      needle = 0
+    end
+  end
+  puts ''
+end
+

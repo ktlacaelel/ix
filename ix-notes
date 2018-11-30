@@ -1,0 +1,38 @@
+# Ideas
+    -- count
+    -- stdv
+    -- median
+    -- mode
+    -- roman
+    -- emails
+
+# Implemented
+    OK urls
+    OK avg
+    OK transpose
+    OK extensions
+    OK sum
+    OK numerate
+    OK directories
+    OK basenames
+
+# Read the following documentation.
+    ix man nl
+    ix man jot
+    ix man pr
+    ix man expand
+    ix man ed
+    ix man rs
+    ix man seq
+    ix man comm
+    ix man cmp
+    ix man diff
+    ix man join
+    ix man yes
+    ix man arc4random
+    ix man printf
+    ix man random
+    ix man fmt
+    ix man fold
+    ix man mail
+    ix man nroff

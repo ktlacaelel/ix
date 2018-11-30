@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  filename  = File.basename(line.chomp)
+  extension = File.extname(line.chomp)
+  puts filename.gsub(extension, '')
+end

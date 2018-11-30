@@ -1,0 +1,152 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'ostruct'
+
+configuration = OpenStruct.new
+
+OptionParser.new do |opts|
+
+  opts.banner = "Find similarity in a set of strings."
+  opts.separator ''
+  opts.separator "Usage: #{File.basename($0)} [OPTIONS]"
+  opts.separator ''
+
+  configuration.group = false
+  configuration.threshold = 50
+  configuration.summary = false
+
+  description = "Group input in batches and process each individually (faster)"
+  opts.on("-g", "--group", description) do |v|
+    configuration.group = v
+  end
+
+  description = "Limit the number of results by threshold, default is 50"
+  opts.on("-t", "--threshhold [NUMBER]", OptionParser::DecimalNumeric, description) do |v|
+    configuration.threshold = v
+  end
+
+  description = "Print a Summary of the groups found"
+  opts.on("-s", "--summary", description) do |v|
+    configuration.summary = v
+  end
+
+
+  opts.separator ''
+
+end.parse!
+
+# puts configuration.inspect
+
+class Array
+  def product
+    inject do |cumulative, value|
+      cumulative += value
+    end
+  end
+end
+
+class String
+  def to_a
+    array = []
+    size.times do |n|
+      array << self[n]
+    end
+    array
+  end
+
+  def scores(other_string)
+    longest_string = nil
+    if other_string.size > self.size
+      longest_string = other_string
+      shortest_string = self
+    else
+      longest_string = self
+      shortest_string = other_string
+    end
+    scores = longest_string.to_a.map do |char|
+      0
+    end
+    shortest_string.size.times do |index|
+      if shortest_string[index] == longest_string[index]
+        scores[index] = 1
+      end
+    end
+    scores
+  end
+
+  def similarity(other_string)
+    scores(other_string).product * 100.0 / size
+  end
+end
+
+class TargetString
+  attr_accessor :evaluated
+  attr_accessor :data
+  def to_s
+    data
+  end
+end
+
+# client
+
+strings = []
+
+STDIN.each_line do |line|
+  next if line.chomp == ''
+  strings << line.chomp
+end
+
+strings.sort! do |n1, n2|
+  n1.size <=> n2.size
+end
+  
+strings.reverse!
+
+strings.map! do |string|
+  target_string = TargetString.new
+  target_string.evaluated = false
+  target_string.data = string
+  target_string
+end
+
+if configuration.group
+  groups = strings.group_by do |string|
+    string.data.size
+  end
+else
+  groups = { 0 => strings }
+end
+
+counter = 0
+groups.each do |key, group|
+  group.each do |string_1|
+    counter = 0
+    unless string_1.evaluated
+      if configuration.summary
+        summary_string = string_1.to_s
+      else
+        puts "****>>" + string_1.to_s
+      end
+    end
+    string_1.evaluated = true
+    group.each do |string_2|
+      next if string_2.evaluated
+      similarity = string_1.to_s.similarity(string_2.to_s)
+      scores = string_1.to_s.scores(string_2.to_s).inspect
+      template = "%5.f %s"
+      bindings = [similarity, string_2, scores]
+      if similarity >= configuration.threshold
+        string_2.evaluated = true
+        counter += 1
+        unless configuration.summary
+          puts template % bindings
+        end
+      end
+    end
+    if counter > 0
+      puts "#{counter} #{summary_string}"
+    end
+  end
+end
+

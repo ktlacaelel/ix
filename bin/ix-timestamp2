@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+# Expects a timestamp perline
+
+require 'time'
+
+STDIN.each do |line|
+  puts '=' * 80
+  orignal_time = line.chomp
+  parsed_time = Time.at(line.chomp.to_i)
+  puts "#{orignal_time} => #{parsed_time}"
+  puts ''
+end
+

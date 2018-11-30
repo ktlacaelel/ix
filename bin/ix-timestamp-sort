@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+lines = {}
+
+TIMESTAMP_REGEX = /[0-9]{10}\.\d+/
+
+STDIN.each_line do |line|
+  if line =~ TIMESTAMP_REGEX 
+    timestamp = line.scan(TIMESTAMP_REGEX)[0]
+    lines[timestamp] = line
+  end
+end
+
+lines.keys.sort.each do |timestap|
+  puts lines[timestap].chomp
+end

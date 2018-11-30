@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+
+limit = ARGV[0].to_i
+
+counter = 0
+
+STDIN.each_line do |line|
+  if counter >= limit
+    counter = 0
+    puts ''
+  end
+  puts line.chomp
+  counter += 1
+end

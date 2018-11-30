@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'tmpdir'
+
+Dir.mktmpdir do |dir|
+  STDIN.each_line do |line|
+    filepath = "#{dir}/file.txt"
+    File.open(filepath, 'w+') do |file|
+      file.write line
+    end
+    system "cat #{filepath} | json_pp"
+  end
+end
+

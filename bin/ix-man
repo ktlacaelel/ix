@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# stole from: http://unix.stackexchange.com/questions/164575/highlight-the-current-search-match-in-man-pages
+
+if [ "$1" == "" ]; then
+  echo "Buddy, I can't find a man page if you don't give me a command.."
+  exit 1
+fi
+
+man -P "sh -c \"col -b | vim -c 'set ft=man ts=8 nomod nolist nonu' \
+   -c 'nnoremap i <nop>' \
+   -c 'nnoremap <Space> <C-f>' \
+   -c 'noremap q :quit<CR>' -\"" $1
+

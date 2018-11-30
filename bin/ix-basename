@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+# transforms paths from stdin to a list of basenames
+
+STDIN.each_line do |path|
+  puts File.basename(path)
+end
+

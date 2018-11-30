@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+multiple = (ARGV[0] || 2).to_i
+
+spacer = (' '* multiple)
+
+TAB_REGEX = /\t/
+
+STDIN.each_line do |line|
+  stops = line.scan(TAB_REGEX).size
+  puts line.gsub(TAB_REGEX, spacer)
+end
+

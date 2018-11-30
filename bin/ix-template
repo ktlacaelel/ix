@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+template = '%s'
+
+if ARGV[0]
+  template = ARGV[0]
+end
+
+bindings = template.scan('%s').size
+
+STDIN.each_line do |line|
+
+  line = line.chomp
+  items = line.split(/\s+/)
+
+  if items.size < bindings
+    while items.size < bindings
+      items.push('n/a')
+    end
+  end
+
+  puts template % items
+end

@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+if ARGV[0] == '-l'
+  orientation = :left
+else
+  orientation = :right
+end
+
+matrix = []
+
+row = []
+
+max_size = 0
+
+STDIN.each_char do |char|
+  if char == "\n"
+    if row.size > max_size
+      max_size = row.size
+    end
+    matrix << row
+    row = []
+  else
+    row << char
+  end
+end
+
+matrix.each do |row|
+  if row.size < max_size
+    (max_size - row.size).times do
+      row << ' '
+    end
+  end
+end
+
+if orientation == :right 
+  matrix = matrix.transpose
+else
+  matrix = matrix.reverse.transpose
+end
+
+matrix.each do |row|
+  if orientation == :right 
+    puts row.join('')
+  else
+    puts row.reverse.join('')
+  end
+end
+

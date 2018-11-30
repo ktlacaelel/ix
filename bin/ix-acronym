@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  acronym = []
+  words = []
+  line.chomp!
+  new_line = line.gsub('_', ' ')
+  new_line.scan(/\w+/).each do |word|
+    acronym.push(word[0])
+    words.push(word)
+  end
+  upper_cased_acronym = acronym.map do |char|
+    char.upcase
+  end
+  expanded_acronym = words.map do |word|
+    word.downcase!
+    word = word[0].upcase + word[1..(word.size - 1)]
+  end
+  puts (upper_cased_acronym * '') + " - #{expanded_acronym * ' '}."
+end
+

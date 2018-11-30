@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+system 'say mister robot'
+
+File.open('/tmp/x', 'w+') do |file|
+  STDIN.each_line do |line|
+    file.print line
+    instruction = "say '#{line.chomp.inspect}'"
+    puts instruction
+    system instruction
+  end
+end
+

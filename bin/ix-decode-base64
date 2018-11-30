@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'base64'
+
+STDIN.each_line do |line|
+  print Base64.decode64(line)
+end

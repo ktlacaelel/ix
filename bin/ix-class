@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts "class #{line.chomp}\nend"
+end

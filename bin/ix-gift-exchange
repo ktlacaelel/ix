@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+participants = []
+matches = []
+
+exchange = {}
+
+STDIN.each_line do |line|
+  participants.push(line.chomp)
+  matches.push(line.chomp)
+end
+
+def find_partner_for(participant, available_participants)
+  result = nil
+  available_participants.shuffle.each do |possible_participant|
+    if possible_participant != participant
+      result = possible_participant
+      break
+    end
+  end
+  unless result
+      raise 'something is wrong!'
+  end
+  available_participants = available_participants - [result]
+  # puts available_participants.inspect
+  result
+end
+
+participants.each do |participant|
+  exchange[participant] = find_partner_for(participant, (matches - exchange.values))
+end
+
+givers_validation = (exchange.keys.sort == participants.sort)
+receivers_validation = (exchange.values.sort == participants.sort)
+
+unless givers_validation
+  raise "Givers don't make sense"
+end
+
+unless givers_validation
+  raise "Receivers don't make sense"
+end
+
+
+exchange.each do |key, value|
+  puts ({ :gives => key, :receives => value }.to_json)
+end
+
+

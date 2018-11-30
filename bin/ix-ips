@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ix scan '\d+\.\d+\.\d+\.\d+'

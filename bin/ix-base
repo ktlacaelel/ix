@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+def decode(base, string)
+  data = ((0..9).to_a + ('a'..'z').to_a + ('A'..'Z').to_a) + ['+', '/']
+  if base > data.size
+    raise "Max base is: #{data.size}"
+  end
+  total = 0
+  count = 0
+  string.reverse.each_char do |char|
+    if char =~ /^\d+$/
+      char = char.to_i
+    end
+    index = data.index(char)
+    total = total + (index * (base ** count))
+    count += 1
+  end
+  total
+end
+
+STDIN.each_line do |line|
+  puts decode(ARGV[0].to_i, line.chomp)
+end
+

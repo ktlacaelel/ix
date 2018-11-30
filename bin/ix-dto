@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+counter = 1
+class_name = ARGV[0]
+
+unless class_name
+  $stderr.puts "Please provide class name as argv 0"
+  exit 1
+end
+
+puts "class #{class_name}"
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+
+    object.keys.each do |key|
+      puts "  attr_accessor :#{key}"
+    end
+
+    puts '  def initialize(configuration)'
+
+    # default values.
+    object.keys.each do |key|
+      puts "    @#{key} = #{object[key].inspect}"
+    end
+
+    # instantiated values.
+    object.keys.each do |key|
+      puts "    @#{key} = configuration['key'] if configuration['key']"
+    end
+    puts '  end'
+  rescue => error
+  end
+end
+
+puts "end"

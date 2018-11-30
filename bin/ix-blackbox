@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+inputs = []
+outputs = []
+system = 'n/a'
+
+INPUT_REGEX = /^\w+/
+SYSTEM_REGEX = /^\s{4}\w+/
+OUTPUT_REGEX = /^\s{8}\w+/
+SPACE_REGEX = /^\s+/
+
+STDIN.each_line do |line|
+
+  line.chomp!
+
+  if line =~ INPUT_REGEX
+    inputs.push(line.gsub(SPACE_REGEX, ''))
+  end
+
+  if line =~ OUTPUT_REGEX
+    outputs.push(line.gsub(SPACE_REGEX, ''))
+  end
+
+  if line =~ SYSTEM_REGEX
+    system = line.gsub(SPACE_REGEX, '')
+  end
+
+end
+
+TEMPLATE = '"%s" -> "%s"'
+
+puts "digraph #{system} {
+rankdir = LR;
+"
+
+inputs.each do |input|
+  puts TEMPLATE % [input, system]
+end
+
+outputs.each do |output|
+  puts TEMPLATE % [system, output]
+end
+
+puts '}'
+

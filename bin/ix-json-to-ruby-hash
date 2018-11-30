@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line)
+    puts hash.inspect
+  rescue => error
+  end
+end
+

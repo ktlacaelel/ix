@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+# begin
+STDIN.each_line do |line|
+  line.chomp!
+  line.gsub!(/(^\w)|(^\s+\w)/) { |m| m.upcase }
+  line.gsub!(/\s\+$/, '')
+  line.gsub!(/_/, ' ')
+  if line[line.size - 1] == '.'
+    puts line
+  else
+    if line.size > 0 # avoid '.' as output
+      puts line + '.'
+    end
+  end
+end
+
+# rescue => e
+#   puts e.message
+#   e.backtrace.each do |line|
+#     puts line
+#   end
+# end

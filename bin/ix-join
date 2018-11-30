@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+join_string = ARGV[0]
+
+chunks = []
+
+STDIN.each_line do |line|
+  line  = line.chomp
+  array = line.split(/\s+$/)
+  array.each do |chunk|
+    chunks << chunk
+  end
+end
+
+puts chunks.join("#{join_string}")

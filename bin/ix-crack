@@ -1,0 +1,163 @@
+#!/usr/bin/env ruby
+
+# ==============================================================================
+# Array hack.
+# ==============================================================================
+# from: https://apidock.com/rails/Array/in_groups_of
+# File activesupport/lib/active_support/core_ext/array/grouping.rb, line 20
+class Array
+  def in_groups_of(number, fill_with = nil)
+    if number.to_i <= 0
+      raise ArgumentError,
+        "Group size must be a positive integer, was #{number.inspect}"
+    end
+
+    if fill_with == false
+      collection = self
+    else
+      # size % number gives how many extra we have;
+      # subtracting from number gives how many to add;
+      # modulo number ensures we don't add group of just fill.
+      padding = (number - size % number) % number
+      collection = dup.concat(Array.new(padding, fill_with))
+    end
+
+    if block_given?
+      collection.each_slice(number) { |slice| yield(slice) }
+    else
+      collection.each_slice(number).to_a
+    end
+  end
+end
+
+# ==============================================================================
+# CRACK IMPLEMENTATION.
+# ==============================================================================
+
+require 'tmpdir'
+require 'json'
+
+class Crack
+
+  MASTER_FUNCTION = %q{
+trap "exit 1" SIGQUIT
+function run_crack_file() {
+    $* 2>&1
+    if [ "$?" != "0" ]; then
+        kill -SIGQUIT $$
+    fi
+}
+}
+
+  SET_FUNCTION = %q{
+function run_command() {
+    uuid=`uuidgen`
+    echo $* > /tmp/$uuid
+    data=`bash /tmp/$uuid 2>&1`
+    status=$?
+    if [ "$status" != "0" ]; then
+        echo "$uuid NG $*"
+        echo "$data" | sed "s/^/`date +%s` `echo $uuid` /"
+        rm /tmp/$uuid
+        exit 1
+    else
+        echo "$uuid OK $*"
+        echo "$data" | sed "s/^/`date +%s` `echo $uuid` /"
+        rm /tmp/$uuid
+    fi
+}
+}
+
+  # Crack - The most lines of crack you do, the best it will feel.
+  #
+  # Receives a *queue* array of system commands to be executed.
+  # and executes them in parallel using a subshelling optimization.
+  #
+  # You may wonder what is the behavior of this parallelization.
+  # Is it asynchronous or synchronous?
+  #
+  # Crack is Asynchronous by nature because it is parallelizing
+  # execution. But it will hide all that handling complexity within
+  # itself. And it will not return until all of the asynchronicity
+  # chaos has been dealt with. So you can assume that it is asynchronous
+  # internally but this method will return only after all the executions
+  # finished.
+  #
+  # threads Fixnum can never be zero, an exception will be thrown.
+  # queue   Array  size can never be zero, an exception will be thrown.
+  #
+  def self.schedule(queue, threads = 16)
+    Dir.mktmpdir do |directory|
+      chunk_size = queue.size / threads
+      chunk_size = 1 if chunk_size == 0
+      master_file = "#{directory}/master.crack"
+      File.open(master_file, 'w+') do |master_file|
+        master_file.puts MASTER_FUNCTION
+        sets = queue.in_groups_of(chunk_size)
+        sets.each_with_index do |set, set_index|
+          set_file_name = "#{directory}/set_#{set_index}.crack"
+          if set_index == sets.size - 1
+            master_file.puts 'run_crack_file "bash ' + set_file_name + '"'
+          else
+            master_file.puts 'run_crack_file "bash ' + set_file_name + '" &'
+          end
+          File.open(set_file_name, 'w+') do |set_file|
+            set_file.puts SET_FUNCTION
+            set.compact.each do |item|
+              set_file.puts "run_command #{item.inspect}"
+            end
+          end
+        end
+        master_file.puts 'wait'
+      end
+
+      # Detects exit status of zero
+      # if process exits with error on ubuntu, fucked up right?.
+      # system "bash #{master_file} &> #{directory}/crack.log"
+      system "bash #{master_file} >>#{directory}/crack.log 2>&1"
+
+      File.read("#{directory}/crack.log").each_line do |line|
+        info = {
+          :trace     => line.chomp,
+          :threads   => threads
+        }
+        puts info.to_json
+      end
+
+      unless $?.success?
+        data = {
+          :queue   => queue,
+          :threads => threads,
+          :time    => Time.now.to_i
+        }
+        sleep 2 # process exits, but data is still streaming.
+        File.open("#{directory}/crack.log", 'a+') do |file|
+          file.puts data.inspect
+        end
+        debug_file = "/tmp/crack_debug_#{Time.now.to_f}.log"
+        system "cp #{directory}/crack.log #{debug_file}"
+        raise "Commands given to crack break, please debug: #{debug_file}"
+      end
+
+    end
+  end
+
+end
+
+# ==============================================================================
+# IX CLIENT CODE.
+# ==============================================================================
+
+commands = []
+
+STDIN.each_line do |line|
+  commands.push(line.chomp)
+end
+
+threads = ARGV[0] || 4
+threads = threads.to_i
+
+
+Crack.schedule(commands, threads)
+
+

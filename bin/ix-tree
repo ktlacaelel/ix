@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+path=`ix join '/'`
+
+mkdir -p $path
+
+first=`echo $path | ix split '/' | head -1`
+
+tree $first
+
+if [ "$first" == "/" ]; then
+    echo Cant delete root.
+    exit 1
+else
+  command="rm -rf $first"
+  echo Delete command: $command
+  $command
+fi
+

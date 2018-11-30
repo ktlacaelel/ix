@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+ix transpose | ix box2 | ix transpose 

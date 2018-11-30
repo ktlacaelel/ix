@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+target = ARGV[1].to_i
+
+map = {}
+
+STDIN.each_line do |line|
+  chunks = line.split(" ")
+  next unless chunks[target]
+  map[chunks[target]] ||= []
+  map[chunks[target]].push(line)
+end
+
+map.each do |identifier, lines|
+  File.open("group_#{identifier}.log", 'a+') do |file|
+    lines.each do |line|
+      file.puts(line)
+    end
+  end
+end
+

@@ -1,0 +1,221 @@
+#!/usr/bin/env ruby
+
+# llp - Lithium Log Parser
+
+require 'rubygems'
+require 'json'
+require 'time'
+require 'optparse'
+require 'isna'
+
+$options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+  opts.on("-e", "--errors", "Error summary.") do |v|
+    $options[:errors] = v
+  end
+  opts.on("-s", "--summary", "Execution summary.") do |v|
+    $options[:summary] = v
+  end
+  opts.on("-c", "--color", "Use color highligting.") do |v|
+    $options[:use_colors] = v
+  end
+  opts.on("-f", "--fetch-node-info", "Fetch node info.") do |v|
+    $options[:fetch_node_info] = v
+  end
+end.parse!
+
+def print(data)
+  unless $options[:errors]
+    puts data
+  end
+end
+
+def translate_timestamp(timestamp_integer)
+  Time.at(timestamp_integer)
+end
+
+def translate_timestamp2(timestamp_integer)
+  cst_delta = 21600
+  utc = Time.at(timestamp_integer + cst_delta)
+  cst = Time.at(timestamp_integer)
+  time = utc
+  "new Date(#{time.year}, #{time.month}, #{time.day}, #{time.hour}, #{time.min}, #{time.sec})"
+end
+
+def print_summary(log_object, indent, options)
+  colored_action = log_object['action']
+  method_name = log_object['method_name']
+  token = log_object['token']
+  took_time = log_object['took_time']
+
+  if options[:use_colors]
+    if log_object['action'] == 'error'
+      colored_action = log_object['action'].to_ansi.blink.red
+    end
+    if log_object['action'] == 'execute'
+      colored_action = log_object['action'].to_ansi.green
+    end
+    if log_object['action'] == 'executed'
+      colored_action = log_object['action'].to_ansi.green
+    end
+    method_name = log_object['method_name'].to_ansi.yellow
+    token = log_object['token'].to_ansi.cyan
+    took_time = log_object['took_time'].to_s.to_ansi.blue
+  end
+
+  template = indent + "%s %s %s %s %s in %s %s"
+
+  bindings = []
+  bindings.push(indent)
+  bindings.push(colored_action)
+  bindings.push(method_name)
+  bindings.push(log_object['class_name'])
+  bindings.push(token)
+  bindings.push(log_object['pname'])
+  bindings.push(took_time)
+
+  if log_object['action'] == 'error'
+    template << "\n%s %s"
+    bindings.push(indent)
+    if options[:use_colors]
+      bindings.push("[#{log_object['error']['message'].to_ansi.red}]")
+    else
+      bindings.push("[#{log_object['error']['message']}]")
+    end
+  end
+
+  puts template % bindings
+end
+
+def print_detailed(log_object, indent, options)
+  template = "%20s: %s"
+  if log_object['action'] == 'execute'
+    print "{{{{{ #{log_object['action']} #{log_object['class_name']} #{log_object['method_name']} #{log_object['arguments']}"
+  end
+  print '------'
+  log_object.keys.sort.each do |key|
+    next if key == 'error'
+    if key == 'start_time'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == 'end_time'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == 'timestamp'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == '_timestamp'
+      print indent + template % [key, translate_timestamp(log_object[key].to_f / 1000)]
+    elsif key == 'return'
+      if log_object[key].include?("\\n")
+        eval(log_object[key].to_s).to_s.each_line do |line|
+          print indent + template % [key, line.chomp]
+        end
+      else
+        print indent + template % [key, log_object[key]]
+      end
+    else
+      print indent + template % [key, log_object[key]]
+    end
+  end
+
+  if log_object.keys.include?('deploy')
+    log_object['deploy'].keys.sort.each do |key|
+      print indent + template % [key, log_object['deploy'][key]]
+    end
+  end
+
+  unless options[:summary]
+    if log_object['action'] == 'executed'
+      print '}}}}}'
+    end
+  end
+
+  if log_object.keys.include?('error')
+    if options[:errors]
+      message = log_object['error']['message'][0..100].gsub(/\n/, '')
+      puts "#{log_object['token']} #{translate_timestamp(log_object['start_time'])}  #{log_object['pname']}  #{log_object['method_name']}  #{message}"
+
+      if options[:fetch_node_info]
+        if ['create_task', 'create_document'].include?(log_object['method_name'])
+          puts "node ./script/getDataFromPsdServer.js --server #{log_object['pname'].split('.')[1]} --traceid #{eval(log_object['arguments'])[0]} | grep -i --color error"
+          system "node ./script/getDataFromPsdServer.js --server #{log_object['pname'].split('.')[1]} --traceid #{eval(log_object['arguments'])[0]} | grep -i --color error"
+        end
+      end
+    end
+
+    log_object['error'].keys.sort.each do |key|
+      if key != 'backtrace'
+        print indent + template % [key, log_object['error'][key]]
+        next
+      end
+    end
+    print ''
+    log_object['error']['backtrace'].each do |err_line|
+      print indent + "\t#{err_line}"
+    end
+  end
+
+  unless options[:summary]
+    if log_object['action'] == 'error'
+      print '}}}}}'
+    end
+  end
+
+end
+
+def print_cobalt_summary(log_object)
+  indent = ' ' * log_object['nesting']
+  output = "#{indent} #{log_object['message']}"
+  if log_object['time']
+    output << " #{log_object['time']}"
+  end
+  puts output
+end
+
+count    = 0
+indent   = ''
+
+STDIN.each_line do |line|
+  lithium_line  = line.include? 'lithium'
+  cobalt_line   = line.include? '_cobaltLog'
+  friendly_line = (lithium_line || cobalt_line)
+  next unless friendly_line
+
+  begin
+    log_object = JSON.parse(line)
+  rescue => error
+    $stderr.puts error.message
+    next
+  end
+
+  unless log_object['action'] # different variant of cobalt
+    if $options[:summary]
+      print_cobalt_summary(log_object)
+      next
+    end
+  end
+
+  if log_object['action'] == 'execute'
+    count += 1
+  end
+
+  if count < 0
+    count = 0
+  end
+
+  if $options[:summary]
+    indent = '  ' * count
+    print_summary(log_object, indent, $options)
+  else
+    indent = '        ' * count
+    print_detailed(log_object, indent, $options)
+  end
+
+  if log_object['action'] == 'executed'
+    count -= 1
+  end
+
+  if log_object['action'] == 'error'
+    count -= 1
+  end
+end
+

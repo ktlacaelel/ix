@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+
+inputs = []
+outputs = []
+system = 'n/a'
+
+INPUT_REGEX = /^\w+/
+SYSTEM_REGEX = /^\s{4}\w+/
+OUTPUT_REGEX = /^\s{8}\w+/
+SPACE_REGEX = /^\s+/
+
+STDIN.each_line do |line|
+
+  line.chomp!
+
+  if line =~ INPUT_REGEX
+    inputs.push(line.gsub(SPACE_REGEX, ''))
+  end
+
+  if line =~ OUTPUT_REGEX
+    outputs.push(line.gsub(SPACE_REGEX, ''))
+  end
+
+  if line =~ SYSTEM_REGEX
+    system = line.gsub(SPACE_REGEX, '')
+  end
+
+end
+
+ROW_TEMPLATE = '
+  <tr>
+    <td>
+      %s
+    </td>
+    <td>
+      %s
+    </td>
+    <td>
+      %s
+    </td>
+  </tr>
+'
+
+ROW_HEADER_TEMPLATE = '
+  <tr>
+    <th>
+      %s
+    </th>
+    <th>
+      %s
+    </th>
+    <th>
+      %s
+    </th>
+  </tr>
+'
+puts HEADER = '<p> Fuctional Specification: %s </p>' % [system]
+
+TABLE_OPENING = '<table border=1>'
+
+TABLE_HEADER = '
+  <caption>
+    Fuctional Specification: %s
+  </caption>
+  %s
+'
+
+header = ROW_HEADER_TEMPLATE % [
+  'Type',
+  'Name',
+  'Description'
+]
+
+puts TABLE_OPENING
+
+puts TABLE_HEADER % [system, header]
+
+inputs.each do |input|
+  puts ROW_TEMPLATE % ['Input', input, '']
+end
+
+outputs.each do |output|
+  puts ROW_TEMPLATE % ['Output', output, '']
+end
+
+puts '</table>'

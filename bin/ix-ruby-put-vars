@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+WORDS_REGEX = /\w+/
+
+STDIN.each_line do |line|
+  words = line.scan(WORDS_REGEX)
+  words.each do |word|
+    puts "puts '#{word} : ' + #{word}.inspect # remove_put_var"
+  end
+end
+

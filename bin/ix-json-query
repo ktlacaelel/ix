@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+    if object[ARGV[0]].to_s =~ /#{ARGV[1]}/
+      puts line
+    end
+  rescue => error
+  end
+end
+

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+cat > /tmp/lake
+cat /tmp/lake | ix right | ix transpose
+cat /tmp/lake | ix transpose
+rm /tmp/lake

@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+regex = /^\s+$/
+
+STDIN.each_line do |line|
+  if line =~ regex
+    # skip
+  else
+    $stdout.write line
+  end
+end
+

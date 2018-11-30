@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+def hashtag(string)
+  words = string.scan(/\w+/)
+  hashtag_word = words.map { |word| word.downcase } * ''
+  hashtag_word.gsub!(/_/, '')
+  "##{hashtag_word}"
+end
+
+STDIN.each_line do |line|
+  puts hashtag(line.chomp) 
+end

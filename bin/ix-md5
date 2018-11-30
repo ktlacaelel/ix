@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'digest/md5'
+
+STDIN.each_line do |line|
+  puts Digest::MD5.hexdigest(line.chomp)
+end

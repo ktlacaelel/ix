@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    input_object = JSON.parse(line)
+    ARGV.each do |key|
+      input_object.delete(key)
+    end
+    puts input_object.to_json
+  rescue => error
+  end
+end
+

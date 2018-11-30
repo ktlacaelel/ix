@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+regex = /#{ARGV[0]}/
+
+STDIN.each_line do |line|
+  if line =~ regex 
+    object              = {}
+    object['timestamp'] = Time.now.tv_sec
+    object['line']      = line.chomp
+    object['match']     = line.scan(regex) 
+    puts object.to_json
+    $stderr.puts "\a"
+  end
+end

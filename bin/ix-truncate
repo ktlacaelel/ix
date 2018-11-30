@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'ostruct'
+require 'optparse'
+
+configuration = OpenStruct.new
+
+configuration.limit = 80
+
+OptionParser.new do |options|
+  options.banner = "USAGE: #{File.basename($0)} [OPTIONS]"
+  help_string = 'Read from stdin and dump each truncated line to limit -l [N] to stdout.'
+  parser = OptionParser::DecimalInteger
+  options.on('-l', '--limit [N]', parser, help_string) do |value|
+    configuration.limit = value
+  end
+end.parse!
+
+STDIN.each_line do |line|
+  puts line[0..configuration.limit]
+end
+

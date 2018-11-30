@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+items = []
+
+STDIN.each_line do |line|
+  items.push(line.chomp)
+end
+
+items.map! do |item|
+  "[#{item}]"
+end
+
+puts items.join(' -> ')

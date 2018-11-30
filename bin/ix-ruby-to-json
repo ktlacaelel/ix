@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+STDIN.each do |line|
+  hash = eval(line)
+  puts JSON.dump(hash)
+end

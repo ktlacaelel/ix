@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    hash = JSON.parse(line.chomp)
+    puts hash.values * "\t"
+  rescue => error
+  end
+end
+
+

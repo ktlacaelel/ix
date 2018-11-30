@@ -1,0 +1,105 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+require 'pp'
+require 'json'
+
+class Shell
+  def self.execute(command)
+    stdout, stderr, status = Open3.capture3(ENV, command)
+    status = status.exitstatus
+  rescue StandardError => error
+    stdout = ""
+    stderr = error.message
+    status = 1
+  ensure
+    return stdout, stderr, status
+  end
+end
+
+
+class Command
+
+  REGEX = {
+    :comment             => /^\s*#/,
+    :empty_line          => /^\s*$/,
+    :variables           => /[A-Z_]+=[^\s]+[\s]/,
+    :trailing_whitespace => /\s+$/
+  }
+
+  def initialize(string)
+    @command = string
+  end
+
+  def is_empty_line?
+    @command =~ REGEX[:empty_line]
+  end
+
+  def is_comment?
+    @command =~ REGEX[:comment]
+  end
+
+  def has_variables?
+    @command =~ REGEX[:variables]
+  end
+
+  def get_variables
+    @command.scan(REGEX[:variables])
+  end
+
+  def get_comment
+    @command.gsub(REGEX[:comment], '')
+  end
+
+  def to_s
+    return @command unless has_variables?
+    command = @command
+    get_variables.each do |variable|
+      command.gsub!(variable, '')
+      key, value = variable.split('=')
+      value = value.gsub!(REGEX[:trailing_whitespace], '')
+      ENV[key] = value
+    end
+    command
+  end
+
+  def execute
+    stdout, stderr, status = Shell.execute(to_s)
+    hash = {
+      :timestamp => Time.now.to_f,
+      :stdout    => stdout,
+      :stderr    => stderr,
+      :status    => status,
+      :command   => to_s
+    }
+  end
+
+end
+
+counter = 0
+
+STDIN.each_line do |line|
+  command = Command.new(line.chomp)
+
+  if command.is_empty_line?
+    next
+  end
+
+  if command.is_comment?
+    # puts "# comment:#{command.get_comment}"
+    next
+  end
+
+  command.get_variables.each do |variable|
+    # puts "# setup env var: #{variable}"
+    next
+  end
+
+  counter += 1
+
+  hash = command.execute
+  hash[:count] = counter
+
+  puts hash.to_json
+
+end

@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+lines = []
+
+STDIN.each_line do |line|
+  lines.push(line)
+end
+
+data = (lines * '')
+
+chunks = data.split('#')
+
+chunks.each_with_index do |chunk, index|
+puts ''
+puts index
+puts chunk
+end

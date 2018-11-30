@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+COMMENT_REGEX = /(\s+#)(.*)/
+
+STDIN.each_line do |line|
+  if line =~ COMMENT_REGEX
+    line.gsub!(COMMENT_REGEX) do |match|
+      "# XX > \1"
+    end
+  end
+  puts line
+end

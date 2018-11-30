@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+#
+
+require 'tmpdir'
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "
+    histogram - Creates png charts using date-time and value data from text.
+
+    Reads two numeric columns from stdin (x, y)
+    and creates a png graphical chart.
+
+    Usage: cat data | #{File.basename($0)} [options]
+  "
+
+  opts.on("-tTITLE", "--title=TITLE", "title of chart") do |v|
+    options[:title] = v
+  end
+
+  opts.on("-xTEXT", "--x-label=TEXT", "label for x axis") do |v|
+    options[:x_label] = v
+  end
+
+  opts.on("-yTEXT", "--y-label=TEXT", "label for y axis") do |v|
+    options[:y_label] = v
+  end
+
+  opts.on("-oOUTPUT_NAME", "--output-name=OUTPUT_NAME", "name of output file (example: speed_vs_time") do |v|
+    options[:output] = v
+  end
+
+end.parse!
+
+unless options[:title]
+  options[:title] = 'title'
+end
+
+unless options[:x_label]
+  options[:x_label] = 'x'
+end
+
+unless options[:y_label]
+  options[:y_label] = 'y'
+end
+
+unless options[:output]
+  options[:output] = 'output'
+end
+
+Dir.mktmpdir do |dir|
+
+  data_path   = "#{dir}/histogram.data"
+  script_path = "#{dir}/script.gnuplot"
+
+  File.open(data_path, 'w+') do |file|
+    STDIN.each_line do |line|
+      file.puts line
+    end
+  end
+
+  File.open(script_path, 'w+') do |script|
+    script.puts "set term png size 800,600"
+    script.puts "set style histogram clustered"
+    script.puts "set grid"
+    script.puts "set timestamp"
+    script.puts "set output \"#{options[:output]}.png\""
+    script.puts "plot for [COL=2:4] '#{data_path}' using COL:xticlabels(1) title columnheader"
+    script.puts "quit"
+  end
+
+  system "gnuplot #{script_path}"
+  puts "open #{options[:output]}.png"
+  
+end
+

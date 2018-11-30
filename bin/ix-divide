@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+divisor = ARGV[0].to_i.to_f
+
+STDIN.each_line do |line|
+  puts line.to_i / divisor
+end
+

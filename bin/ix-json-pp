@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+    puts JSON.pretty_generate(object)
+  rescue => error
+  end
+end
