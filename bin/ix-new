@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-vim /Users/kazu/dev/git/ix/bin/ix-$1
-chmod +x /Users/kazu/dev/git/ix/bin/ix-$1
