@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+REGEX = /(^\s*)(.*)/
+PREFIX = ARGV[0] || '# '
+
+STDIN.each_line do |line|
+  chunks = line.chomp.scan(REGEX)
+  space, data = chunks[0]
+  puts "#{space}# DONE: #{data}"
+end
+

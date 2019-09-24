@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line.scan(/\w+/).each do |word|
+    puts "@#{word} = #{word}"
+  end
+end

@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line.unpack("C*").each do |char|
+    puts char.to_i.to_s(2) + ' '
+  end
+end

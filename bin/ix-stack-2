@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'isna'
+
+STDIN.each_line do |stack_line|
+  filepath, line = stack_line.split(':')
+  puts ''
+  puts '-' * 80
+  puts "file: #{filepath}" 
+  puts "line: #{line}" 
+
+  line = line.to_i
+  range_left = ((line - 5)..line).to_a
+  range_right = (line..(line + 5)).to_a
+  full_range = (range_left + range_right).sort
+
+  if File.exists?(filepath)
+    file_line = 0
+    File.read(filepath).each_line do |fline|
+      file_line += 1
+      if full_range.include?(file_line)
+        if line == file_line
+          r = "%10.f | %s" % [file_line, fline]
+          puts r.chomp.to_ansi.red.to_s
+        else
+          puts "%10.f | %s" % [file_line, fline]
+        end
+      end
+    end
+  end
+end

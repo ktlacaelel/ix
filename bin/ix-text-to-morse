@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+
+class Morse
+
+  MAPPING = {
+	'a'  => '.-',
+	'b'  => '-...',
+	'c'  => '-.-.',
+	'd'  => '-..',
+	'e'  => '.',
+	'f'  => '..-.',
+	'g'  => '--.',
+	'h'  => '....',
+	'i'  => '..',
+	'j'  => '.---',
+	'k'  => '-.-',
+	'l'  => '.-..',
+	'm'  => '--',
+	'n'  => '-.',
+	'o'  => '---',
+	'p'  => '.--.',
+	'q'  => '--.-',
+	'r'  => '.-.',
+	's'  => '...',
+	't'  => '-',
+	'u'  => '..-',
+	'v'  => '...-',
+	'w'  => '.--',
+	'x'  => '-..-',
+	'y'  => '-.--',
+	'z'  => '--..',
+	'0'  => '-----',
+	'1'  => '.----',
+	'2'  => '..---',
+	'3'  => '...--',
+	'4'  => '....-',
+	'5'  => '.....',
+	'6'  => '-....',
+	'7'  => '--...',
+	'8'  => '---..',
+	'9'  => '----.',
+	' '  => ' / ',
+  }
+
+  def self.text_to_morse(string)
+    result = ''
+    string.scan(/[a-zA-Z0-9]| /).each do |char|
+      result << MAPPING[char.downcase] + ' '
+    end
+    result
+  end
+
+  def self.morse_to_text(string)
+    result = ''
+    string.split(' / ').each do |word|
+      word.split(' ').each do |char|
+        MAPPING.each do |k, v|
+          if v == char
+            result << k
+          end
+        end
+      end
+      result << ' '
+    end
+    result
+  end
+
+end
+
+STDIN.each_line do |line|
+  puts Morse.text_to_morse(line)
+end

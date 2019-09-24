@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+arguments = []
+
+STDIN.each_line do |line|
+  arguments.push(line.chomp)
+end
+
+template = "(%s)"
+bindings = [(arguments * ', ')]
+puts template % bindings
+

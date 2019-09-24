@@ -1,0 +1,224 @@
+#!/usr/bin/env ruby
+
+# llp - Lithium Log Parser
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-e', '--errors', 'Errors.') do |value|
+    options[:errors] = value
+  end
+
+  opts.on('-s', '--summary', 'Summary.') do |value|
+    options[:summary] = value
+  end
+
+  opts.on('-c', '--color', 'Color.') do |value|
+    options[:color] = value
+  end
+
+
+end.parse!
+
+required_options = [:errors, :summary, :color]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+
+require 'rubygems'
+require 'json'
+require 'time'
+require 'isna'
+
+
+def print(data)
+  unless $options[:errors]
+    puts data
+  end
+end
+
+def translate_timestamp(timestamp_integer)
+  Time.at(timestamp_integer)
+end
+
+SUMMARY_FORMAT = "%<indent>s %<action>s %<resolved_class>s %<method_name>s %<short_token_id>s %<short_trace_id>s %<pname>s %<took_time>s"
+
+def print_summary(log_object, indent, use_colors = true)
+
+
+  object = log_object.symbolize_keys
+
+  object[:short_trace_id] = object[:trace_id].to_s[1..10]
+  object[:short_token_id] = object[:token].to_s[1..10]
+
+  if use_colors
+    if object[:action] == 'error'
+      object[:action] = object[:action].to_ansi.blink.red
+    end
+    if object[:action] == 'execute'
+      object[:action] = object[:action].to_ansi.green
+    end
+    if object[:action] == 'executed'
+      object[:action] = object[:action].to_ansi.green
+    end
+    object[:method_name] = object[:method_name].to_ansi.red
+
+
+    object[:short_trace_id] = object[:trace_id].to_s[1..10].to_ansi.green.to_s
+    object[:short_token_id] = object[:token].to_s[1..10].to_ansi.blue.to_s
+
+    object[:took_time] = object[:took_time].to_s.to_ansi.blue
+  end
+
+
+  # if log_object['action'] == 'error'
+  #   template << "\n%s %s"
+  #   bindings.push(indent)
+  #   if use_colors
+  #     bindings.push("[#{log_object['error']['message'].to_ansi.red}]")
+  #   else
+  #     bindings.push("[#{log_object['error']['message']}]")
+  #   end
+  # end
+
+  puts format(SUMMARY_FORMAT, object)
+end
+
+def print_detailed(log_object, indent, options)
+  template = "%20s: %s"
+  if log_object['action'] == 'execute'
+    print "{{{{{ #{log_object['action']} #{log_object['class_name']} #{log_object['method_name']} #{log_object['arguments']}"
+  end
+  print '------'
+  log_object.keys.sort.each do |key|
+    next if key == 'error'
+    if key == 'start_time'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == 'end_time'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == 'timestamp'
+      print indent + template % [key, translate_timestamp(log_object[key])]
+    elsif key == '_timestamp'
+      print indent + template % [key, translate_timestamp(log_object[key].to_f / 1000)]
+    elsif key == 'return'
+      if log_object[key].include?("\\n")
+        object = eval(log_object[key].to_s)
+
+
+        if object.is_a?(Array)
+          object.each_with_index do |item, index|
+            item = item.to_s
+            if item.to_s.include? "output"
+              begin
+              json = JSON.parse(item)
+              json['output'].each_line do |json_line|
+                print indent + template % [key, json_line.chomp]
+              end
+              rescue => error
+              print indent + template % [index, item.chomp]
+              end
+            else
+              print indent + template % [index, item.chomp]
+            end
+          end
+        end
+
+        if object.is_a?(String)
+          object.each_line do |line|
+            print indent + template % [key, line.chomp]
+          end
+        end
+
+      else
+        print indent + template % [key, log_object[key]]
+      end
+    else
+      print indent + template % [key, log_object[key]]
+    end
+  end
+
+  if log_object.keys.include?('deploy')
+    log_object['deploy'].keys.sort.each do |key|
+      print indent + template % [key, log_object['deploy'][key]]
+    end
+  end
+
+  unless options[:summary]
+    if log_object['action'] == 'executed'
+      print '}}}}}'
+    end
+  end
+
+  if log_object.keys.include?('error')
+    if options[:errors]
+      message = log_object['error']['message'][0..100].gsub(/\n/, '')
+      puts "#{log_object['token']} #{translate_timestamp(log_object['start_time'])}  #{log_object['pname']}  #{log_object['method_name']}  #{message}"
+    end
+
+    log_object['error'].keys.sort.each do |key|
+      if key != 'backtrace'
+        print indent + template % [key, log_object['error'][key]]
+        next
+      end
+    end
+    print ''
+    log_object['error']['backtrace'].each do |err_line|
+      print indent + "\t#{err_line}"
+    end
+  end
+
+  unless options[:summary]
+    if log_object['action'] == 'error'
+      print '}}}}}'
+    end
+  end
+
+end
+
+count    = 0
+indent   = ''
+
+STDIN.each_line do |line|
+  next unless line.include? 'lithium'
+
+  begin
+    log_object = JSON.parse(line)
+  rescue => error
+    $stderr.puts error.message
+    next
+  end
+
+  if log_object['action'] == 'execute'
+    count += 1
+  end
+
+  if count < 0
+    count = 0
+  end
+
+  if $options[:summary]
+    indent = '  ' * count
+    print_summary(log_object, indent, $options)
+  else
+    indent = '        ' * count
+    print_detailed(log_object, indent, $options)
+  end
+
+  if log_object['action'] == 'executed'
+    count -= 1
+  end
+
+  if log_object['action'] == 'error'
+    count -= 1
+  end
+end
+

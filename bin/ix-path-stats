@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+def build_branch(hash, string, split)
+  chunks = string.split(split)
+  clean_chunks = chunks - [""]
+  puts clean_chunks.inspect
+  dynamic_code = ""
+  clean_chunks.each do |chunk|
+    dynamic_code << "['#{chunk}'] || = {}\n"
+  end
+  puts dynamic_code
+end
+
+tree = {}
+
+STDIN.each_line do |line|
+  build_branch(tree, line.chomp, '/')
+end
+
+puts tree.inspect
+

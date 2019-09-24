@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+lower = ('0'..'Z').to_a
+upper = ('0'..'z').to_a
+extra = '!@#$%^&*()_+-=[]{}|\''.scan(/./)
+
+possiblities = lower + upper + extra
+
+output_string = ''
+output_length = (ARGV[0] || 8).to_i
+
+output_length.times do |n|
+  output_string << possiblities.shuffle.first()
+end
+
+puts output_string
+

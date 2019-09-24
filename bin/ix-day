@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'time'
+
+map = {}
+
+STDIN.each_line do |line|
+  ts = line.chomp.to_i
+  time = Time.at(ts)
+  puts "#{ts} - #{time.year}.#{time.month}.#{time.day}"
+end
+

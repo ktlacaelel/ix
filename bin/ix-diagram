@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'tree_node'
+
+class Node
+  include Tree::Node
+  attr_accessor :level
+  attr_accessor :label
+  def initialize(level, label)
+    @level = level
+    @label = label
+  end
+  def to_s
+    "<Node level:#{level}, label:#{label}, children: #{children.size}>"
+  end
+  def relations
+    children.map do |child|
+      "#{label.inspect} -> #{child.label.inspect}"
+    end
+  end
+end
+
+SPACER = /\s\s\s\s/
+
+nodes = []
+
+STDIN.each_line do |line|
+  label = line.chomp.gsub(SPACER, '')
+  level = line.chomp.scan(SPACER).size
+  node = Node.new(level, label)
+  nodes.push(node)
+  nodes.reverse.find do |previous_node|
+    if previous_node.level < node.level
+      previous_node.add_child(node)
+    end
+  end
+end
+
+puts 'digraph diagram {'
+puts "rankdir = #{ARGV[0] || 'LR'};"
+nodes.first.map(:down) do |node|
+  node.relations.each do |relation|
+    puts relation
+  end
+end
+puts '}'
+

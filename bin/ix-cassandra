@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  text = line.chomp
+  text.gsub!(/([a-zA-Z]+)(o\s)/, '\1i ')
+  text.gsub!(/([a-zA-Z]+)(a\s)/, '\1e ')
+  puts text + ' y esta bien vergui!'
+end
+

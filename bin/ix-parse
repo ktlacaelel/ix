@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+
+counter = 0
+STDIN.each_line do |line|
+  counter += 1
+  key, value = line.split(' : ')
+  prefix = key.scan(/(^\s+)(.*)/)[0][0]
+  key.gsub!(/^\s+/, '')
+  value.gsub!(/^\s+/, '')
+  value.gsub!(/,$/, '')
+  puts prefix + "#{('dir_' + counter.to_s).inspect} : {"
+  puts prefix + '  "source" : ' + "#{key.chomp},"
+  puts prefix + '  "target" : ' + "#{value.chomp}"
+  puts prefix + '},'
+end
+

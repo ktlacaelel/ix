@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'isna'
+
+class AnsiIteration
+
+  def initialize transformer
+    @transformer = transformer
+    @count = 0
+  end
+
+  def next
+    if @count > 7
+      @count = 0
+    end
+    @count += 1
+    @transformer + @count
+  end
+
+end
+
+ai = AnsiIteration.new(30)
+
+STDIN.each_char do |char|
+  ansi = char.to_s.to_ansi.change_color(ai.next)
+  print ((0..5).to_a.shuffle.first == 1) ? "#{ansi.blink}" : "#{ansi}"
+end
+

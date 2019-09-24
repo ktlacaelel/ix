@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  path = ''
+  chunks = line.chomp.split('/')
+  chunks.each do |chunk|
+    path << '/' + chunk
+    if File.symlink?(path)
+      puts "Symlink found: #{path}"
+      system "ls -al #{path}"
+    end
+  end
+end

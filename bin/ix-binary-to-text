@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+# ix scan '\d+' | ix base 2 | ix chr
+
+STDIN.each_line do |line|
+  print line.to_i(2).chr
+end
+

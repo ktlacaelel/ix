@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+OK_REGEX = /\s*OK - .*/
+NG_REGEX = /\s*-- - .*/
+LEADING_SPACE = /(^\s*)([^\s].*$)/
+
+STDIN.each_line do |line|
+  line.chomp!
+  if line =~ OK_REGEX
+    line.gsub!('OK - ', '-- - ')
+    puts line
+    next
+  end
+  if line =~ NG_REGEX
+    line.gsub!('-- - ', 'OK - ')
+    puts line
+    next
+  end
+  puts line.gsub(LEADING_SPACE, '\1-- - \2')
+end

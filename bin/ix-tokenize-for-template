@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+WORDS_REGEX = /\w+/
+UPPER_CASE_WORDS = /([A-Z])/
+SPACE_PADDING = /^\s+/
+STARTS_WITH_UPPERCASE = /\s*[A-Z]/
+
+starts_with_uppercase = false
+
+STDIN.each_line do |line|
+  line.chomp!
+  if line =~ STARTS_WITH_UPPERCASE
+    starts_with_uppercase = true
+  end
+  line.gsub!(UPPER_CASE_WORDS, ' \1')
+  padding = line.scan(SPACE_PADDING)[0].to_s
+  words = line.scan(WORDS_REGEX)
+
+  if starts_with_uppercase
+    padding = padding[1..(padding.size - 1)]
+  end
+  snake = words.map { |word| word.downcase } * '_'
+  puts padding + line + ' %<' + snake + '>s'
+end
+

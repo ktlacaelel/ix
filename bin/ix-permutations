@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+items = []
+
+STDIN.each_line do |line|
+  items.push(line.chomp)
+end
+
+items.permutation.each do |permutation|
+  puts permutation.inspect
+end
+

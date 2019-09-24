@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts line.chomp
+end
+
+print ARGV[0]
+

@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+def commandify(string)
+  words = {}
+  interpolation_buffer = []
+  string.scan(/\w+/).each do |word|
+    word.downcase!
+    interpolation_buffer.push(word)
+  end
+  interpolation = (interpolation_buffer * '_')
+  words[string] = "%<#{interpolation}>s"
+  words
+end
+
+STDIN.each_line do |line|
+  line = line.chomp!
+  hash = commandify(line)
+  hash.each do |k, v|
+    puts "#{k} #{v}" 
+  end
+end
+

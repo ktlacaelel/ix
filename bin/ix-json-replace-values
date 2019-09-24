@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+data = STDIN.read
+
+hash = JSON.parse(data)
+
+def replace_value(value)
+  if value.is_a?(String)
+    return 'string'
+  end
+  if value.is_a?(Fixnum)
+    return 1
+  end
+  if value.is_a?(Float)
+    return 1.0
+  end
+  if value.is_a?(Array)
+    return value.map! do |item|
+      replace_value(item)
+    end
+  end
+  if value.is_a?(Hash)
+    return nest(value)
+  end
+end
+
+def nest(hash)
+  hash.each do |key, value|
+    hash[key] = replace_value(value)
+  end
+end
+
+puts nest(hash).to_json

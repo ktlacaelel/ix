@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+start = ARGV[0]
+finish = ARGV[1]
+
+puts start
+STDIN.each_line do |line|
+  puts line.chomp
+end
+puts finish

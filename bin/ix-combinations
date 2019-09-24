@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+sets = []
+
+STDIN.each_line do |line|
+  sets.push(line)
+end
+
+sets.combination((ARGV[0] || 2).to_i).each do |set|
+  puts set * "\t"
+end

@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+class Counter
+  class << self
+    def get
+      File.read('/tmp/counter').to_i 
+    end
+    def set(value)
+      File.open('/tmp/counter', 'w+') do |file|
+        file.puts(value)
+      end
+    end
+    def increase
+      set(get + 1)
+    end
+    def decrease
+      set(get - 1)
+    end
+    def to_human
+      get.to_s.rjust(4, '0')
+    end
+  end
+end
+
+
+STDIN.each_line do |line|
+  puts ''
+  Counter.increase
+  puts "#{Counter.to_human} - Debugging: #{ARGV[0]}: #{line.chomp}"
+  puts '--------------------------------------------------------------------------------'
+  puts ''
+end
+
