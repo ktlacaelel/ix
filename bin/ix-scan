@@ -6,6 +6,7 @@ regex   = Regexp.new(matcher)
 STDIN.each_line do |line|
   line = line.chomp
   line.scan(regex).each do |match|
+    # puts match * "\t" 
     puts match
   end
 end

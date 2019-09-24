@@ -2,6 +2,7 @@
 #
 
 puts 'digraph G {'
+puts 'rankdir = LR;'
 
 QUOTED_NODES_REGEX = /("[^"]+")(\s*)("[^"]+")/
 

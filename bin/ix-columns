@@ -1,6 +1,41 @@
 #!/usr/bin/env ruby
 
+require 'tmpdir'
+
+# decomposes each line into columns
+# applying transformations on each column.
+
+class Formatter
+  REGEX = /(\d+)(\:)([^$]+)/
+  def initialize(string)
+    @string = string
+  end
+  def valid?
+    @string =~ REGEX
+  end
+  def column
+    @string.scan(REGEX)[0][0].to_i
+  end
+  def processor
+    @string.scan(REGEX)[0][2]
+  end
+end
+
+def resolve_processor(column)
+end
+
+SPLITTER = /\s+/
+
 STDIN.each_line do |line|
-  puts line.chomp.size
+  output = []
+  columns = line.chomp.split(SPLITTER)
+
+  ARGV.each do |value|
+    formatter = Formatter.new(value)
+    next unless formatter.valid?
+    output.push(`echo #{columns[formatter.column]} | #{formatter.processor}`.chomp)
+  end
+
+  puts output * ' '
 end
 

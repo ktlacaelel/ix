@@ -1,5 +1,12 @@
 #!/usr/bin/env ruby
 
 STDIN.each_line do |line|
-  puts line.chomp.inspect
+  # puts line.chomp.inspect
+  template = "%<quote_start>s%<content>s%<quote_end>s"
+  bindings = {
+    :quote_start => ARGV[0] || '"',
+    :quote_end   => ARGV[1] || '"',
+    :content     => line.chomp
+  }
+  puts format(template, bindings)
 end

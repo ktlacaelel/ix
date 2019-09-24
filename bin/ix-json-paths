@@ -10,7 +10,13 @@ def resolve_type(object)
     return 'string'
   end
   if object.is_a?(Array)
-    return 'array'
+    result = ''
+    result << '(array)'
+    object.each do |item|
+      result << "\n  - " + resolve_type(item)
+    end
+    result << "\n"
+    return result
   end
   if object.is_a?(Fixnum)
     return 'integer'
@@ -48,7 +54,8 @@ STDIN.each_line do |line|
     hash = JSON.parse(line)
     puts parse(hash)
   rescue => e
-    # puts e.message
+    raise e
+    puts e.message
   end
 end
 

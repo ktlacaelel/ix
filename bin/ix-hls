@@ -1,5 +1,14 @@
 #!/usr/bin/env ruby
 
+#
+# options
+#
+#    line      ix-highlight-line highlight a specific line
+#    vertical  ix-highlight-vertical highlight a particular column
+#    highlight ix-highlight-match highlight whatever matches a regex
+#
+
+
 abort 'No pattern given' if ARGV[0].nil?
 
 trap('SIGINT') { }

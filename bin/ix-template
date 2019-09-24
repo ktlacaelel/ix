@@ -1,23 +1,48 @@
 #!/usr/bin/env ruby
 
-template = '%s'
+require 'fileutils'
 
-if ARGV[0]
-  template = ARGV[0]
+INTERPOLATOR_TOKEN = /%\d+s/
+
+# puts interpolate(['world', 'other world'], 'hello %1s')
+def interpolate(values, template) 
+  copy = "#{template}"
+  copy.scan(INTERPOLATOR_TOKEN).each do |interpolator|
+    needle = interpolator.scan(/\d+/).first.to_i
+    value = (values[needle - 1] || 'n/a')
+    copy.gsub!(interpolator, value)
+  end
+  copy
 end
 
-bindings = template.scan('%s').size
+if ARGV[0]
+  template = "#{ARGV[0]}"
+  if File.exists?(template)
+    template = File.read(template)
+  end
+end
 
 STDIN.each_line do |line|
 
-  line = line.chomp
-  items = line.split(/\s+/)
-
-  if items.size < bindings
-    while items.size < bindings
-      items.push('n/a')
-    end
+  if line =~ /\t/
+    values = line.chomp.split(/\t/)
+  else
+    values = line.chomp.split(/\s+/)
   end
 
-  puts template % items
+  unless ARGV[1]
+    STDOUT.puts interpolate(values, template)
+    next
+  end
+
+  fname = interpolate(values, ARGV[1])
+  dir = File.dirname(fname)
+  unless File.directory?(dir)
+    # puts "creating #{dir}"
+    FileUtils.mkdir_p(dir)
+  end
+  File.open(fname, 'w+') do |file|
+    file.puts interpolate(values, template)
+  end
 end
+

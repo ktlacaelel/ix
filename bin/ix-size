@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 
+limit = ARGV[0].to_i - 1
+
 STDIN.each_line do |line|
-  puts line.chomp.size
+  line.chomp!
+  puts "#{line.size.to_s.ljust(10, ' ')} #{line[0..(limit)]} "
 end
 

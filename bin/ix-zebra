@@ -1,17 +1,122 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-v', '--vertical', 'Vertical.') do |value|
+    options[:vertical] = value
+    options[:horizontal] = !value
+  end
+
+  opts.on('-o', '--horizontal', 'Horizontal.') do |value|
+    options[:horizontal] = value
+    options[:vertical] = !value
+  end
+
+  opts.on('-t', '--tabs', 'Split by tabs instead of spaces.') do |value|
+    options[:horizontal] = true
+    options[:vertical] = false
+    options[:tabs] = true
+    # todo: implement.
+  end
+
+  opts.on('-c', '--colors [LIST]', 'Color transformations that will be applied. Example: red,green,normal') do |value|
+    options[:colors] = value.to_s.split(',').map { |x| x.to_sym }
+  end
+
+end.parse!
+
+required_options = []
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+################################################################################
+
+class FlipFlop
+  def initialize(options)
+    @options = options
+    @needle = -1
+  end
+  def resolve
+    @needle += 1
+    if @needle == @options.size
+      @needle = 0
+    end
+    @options[@needle]
+  end
+  def reset
+    @needle = -1
+  end
+end
+
+################################################################################
+
+unless options[:vertical] || options[:horizontal]
+  options[:vertical] = true
+end
+
+if options[:colors] == []
+  if options[:vertical] == true
+    options[:colors] = [:green, :normal]
+  else
+    options[:colors] = [:green, :normal, :blue, :red]
+  end
+end
+
+if options[:colors] == nil
+  if options[:vertical] == true
+    options[:colors] = [:green, :normal]
+  else
+    options[:colors] = [:green, :normal, :blue, :red]
+  end
+end
+
+flip_flop = FlipFlop.new(options[:colors])
+
+SPACES_REGEX = /^\s+$/
+TOKEN_REGEX = /(\s+|[^\s]+)/
+
 require 'isna'
 
-colors = [:green, :red]
-
-index = 1
+$stdout.sync = true
+$stdin.sync = true
 
 STDIN.each_line do |line|
-  index = (index != 0) ? 0 : 1 
-  if index == 0
-    puts line.chomp.to_ansi.negative.send(colors[index]).to_s
-  else
-    puts line.chomp.to_ansi.normal.send(colors[index]).to_s
+  line.chomp!
+
+  if options[:vertical]
+    color = flip_flop.resolve
+    puts line.to_ansi.normal.send(color).to_s
+    next
   end
+
+  tokens = line.split(TOKEN_REGEX)
+
+  # puts tokens.inspect
+
+  flip_flop.reset
+
+  tokens.each do |token|
+    next if token == ''
+    if token =~ SPACES_REGEX
+      print token
+      next
+    end
+    color = flip_flop.resolve
+    # print (color.to_s + "(#{token}) ")
+    print token.to_ansi.normal.send(color).to_s
+  end
+
+  print "\n"
+
 end
 

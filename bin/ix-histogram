@@ -69,6 +69,7 @@ Dir.mktmpdir do |dir|
     script.puts "set timestamp"
     script.puts "set output \"#{options[:output]}.png\""
     script.puts "plot for [COL=2:4] '#{data_path}' using COL:xticlabels(1) title columnheader"
+    script.puts "plot for [COL=2:4] '#{data_path}' using COL:xticlabels(1) title columnheader(2), for [i=3:22] '' using i title columnheader(i)"
     script.puts "quit"
   end
 

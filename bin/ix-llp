@@ -59,19 +59,21 @@ def print_summary(log_object, indent, options)
     if log_object['action'] == 'executed'
       colored_action = log_object['action'].to_ansi.green
     end
-    method_name = log_object['method_name'].to_ansi.yellow
-    token = log_object['token'].to_ansi.cyan
+    method_name = log_object['method_name'].to_ansi.red
+    token = log_object['token'][0..10].to_ansi.cyan
+    trace_id = log_object['trace_id'][0..10].to_ansi.green rescue 'n/a'
     took_time = log_object['took_time'].to_s.to_ansi.blue
   end
 
-  template = indent + "%s %s %s %s %s in %s %s"
+  template = indent + "%s %s %s%s %s %s in %s %s"
 
   bindings = []
   bindings.push(indent)
   bindings.push(colored_action)
-  bindings.push(method_name)
   bindings.push(log_object['class_name'])
+  bindings.push('#' + method_name.to_s)
   bindings.push(token)
+  bindings.push(trace_id)
   bindings.push(log_object['pname'])
   bindings.push(took_time)
 
@@ -106,9 +108,33 @@ def print_detailed(log_object, indent, options)
       print indent + template % [key, translate_timestamp(log_object[key].to_f / 1000)]
     elsif key == 'return'
       if log_object[key].include?("\\n")
-        eval(log_object[key].to_s).to_s.each_line do |line|
-          print indent + template % [key, line.chomp]
+        object = eval(log_object[key].to_s)
+
+
+        if object.is_a?(Array)
+          object.each_with_index do |item, index|
+            item = item.to_s
+            if item.to_s.include? "output"
+              begin
+              json = JSON.parse(item)
+              json['output'].each_line do |json_line|
+                print indent + template % [key, json_line.chomp]
+              end
+              rescue => error
+              print indent + template % [index, item.chomp]
+              end
+            else
+              print indent + template % [index, item.chomp]
+            end
+          end
         end
+
+        if object.is_a?(String)
+          object.each_line do |line|
+            print indent + template % [key, line.chomp]
+          end
+        end
+
       else
         print indent + template % [key, log_object[key]]
       end

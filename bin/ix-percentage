@@ -47,7 +47,7 @@ class Percentage
       end
     end
     bindings = [filling, to_f, '%', @divisor]
-    "[%-#{@scale + padding}s%7.3f%s] %10.2f " % bindings
+    "[%-#{@scale + padding}s%7.3f%s] %10.2f incidents for" % bindings
   end
 end
 

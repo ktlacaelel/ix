@@ -52,7 +52,7 @@ STDIN.each_line do |line|
     date = Time.at(timestamp.to_f / divide)
     previous = date unless previous
     diff = (date - previous)
-    template = "%20s   %s %10.5f < diff   %10.5f < time   -- %s"
+    template = "%20s   %s %20.5f < diff   %10.5f < time   -- %s"
     bindings = []
     bindings.push(timestamp)
     bindings.push(date)

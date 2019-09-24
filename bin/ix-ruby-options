@@ -126,7 +126,7 @@ class UsefulOption
     words.map! do |word|
       word.downcase
     end
-    ':' + (words * '_')
+    (words * '_').to_sym
   end
 
   def to_description
@@ -141,7 +141,7 @@ class UsefulOption
   def to_optparse
     string = ''
     string << "  opts.on('#{to_short_flag}', '#{to_long_flag}', '#{to_description}') do |value|\n"
-    string << "    options[#{to_symbol}] = value\n"
+    string << "    options[#{to_symbol.inspect}] = value\n"
     string << "  end\n"
     string << "\n" 
     string
@@ -171,6 +171,16 @@ end
 
 puts ""
 puts "end.parse!"
+puts ""
+
+puts "required_options = #{USEFUL_OPTIONS.map { |opt| opt.to_symbol }.inspect }"
+puts 'required_options.each do |option|'
+puts '  unless options[option]'
+puts '    $stderr.puts "Can not run #{option.to_s} was not given."'
+puts '    exit 1'
+puts '  end'
+puts 'end'
+
 puts ""
 
 puts "p options"

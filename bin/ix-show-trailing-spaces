@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 
+require 'isna'
+
+"\\1\e[0;0;34m<--- space\e[0m"
 STDIN.each_line do |line|
-  spaces = line.gsub(/([ ]+$)/, "\\1\e[0;0;44m<--- space\e[0m")
+  spaces = line.gsub(/([ ]+$)/, "[\\1]".to_ansi.negative.underline.red.blink.to_s + '<--- space'.to_ansi.red.to_s)
   tabs = spaces.gsub(/(\t+$)/, "\\1\e[0;0;41m<--- tab\e[0m")
   print tabs
 end

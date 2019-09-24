@@ -23,6 +23,8 @@ STDIN.each_line do |line|
         else
           string.push(object[argument].to_json)
         end
+      else
+        string.push(argument)
       end
     end
     if string.size > 0

@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+if ARGV[0]
+  Dir.chdir ARGV[0]
+end
 
 STDIN.each do |line|
   chunks = line.split(':')
@@ -27,9 +30,9 @@ STDIN.each do |line|
     if counter > line_number -10
       if counter < line_number +10
         if counter == line_number
-          puts "#{spacer}[0;32;1m" + counter.to_s.rjust(8, ' ') + " #{line.chomp}[0m"
+          puts "#{spacer}[0;32;1m" + counter.to_s.rjust(8, ' ') + "| #{line.chomp}[0m"
         else
-          puts spacer +counter.to_s.rjust(8, ' ') + " #{line}"
+          puts spacer +counter.to_s.rjust(8, ' ') + "| #{line}"
         end
       end
     end
