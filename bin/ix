@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [ "$1" == "" ]; then
+    ls $(dirname "$(which ix)") | grep '^ix' | column
+else
+    command="ix-$1"
+    shift 1
+    $command "$@" 
+fi
+
