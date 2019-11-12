@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  chunks = line.chomp.split(/\s+/)
+  puts chunks * "\t"
+end
+
