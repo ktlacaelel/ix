@@ -1,2 +1,3 @@
 # ix
 
+MIT License.
