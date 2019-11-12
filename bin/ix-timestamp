@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+$stdout.sync = true
+
+if ARGV[0]
+  if ARGV[0] == '-h'
+    puts ''
+    puts 'Leyend below:'
+    puts ''
+    puts '  - [  diff  ] Indicates the time elapsed since the previous line to the current line.'
+    puts '  - [  time  ] Indicates the time elapsed since the beginning of time.'
+    puts ''
+    puts '  Please note that all times are shown in seconds'
+    puts ''
+    puts ''
+    exit 0
+  else
+    divide = 1000
+  end
+else
+  divide = 1
+end
+
+previous = nil
+
+diffs = []
+
+regex_float = /[0-9]{10,13}\.\d+/
+regex_int = /[0-9]{10,13}/
+
+first_timestamp = false
+
+STDIN.each_line do |line|
+  line.chomp!
+
+  timestamps = line.scan(regex_float)
+
+  if timestamps == []
+    timestamps = line.scan(regex_int)
+  end
+
+  if timestamps == []
+    next
+  end
+
+  timestamps.each do |timestamp|
+
+    unless first_timestamp
+      first_timestamp = Time.at(timestamps.first.to_f / divide)
+    end
+
+    date = Time.at(timestamp.to_f / divide)
+    previous = date unless previous
+    diff = (date - previous)
+    template = "%20s   %s %20.5f < diff   %10.5f < time   -- %s"
+    bindings = []
+    bindings.push(timestamp)
+    bindings.push(date)
+    bindings.push(diff)
+    if ENV['REPLAY']
+      sleep diff
+    end
+    bindings.push(date - first_timestamp)
+    diffs.push(diff)
+    bindings.push(line)
+    puts template % bindings
+    previous = date
+  end
+
+end
+
+total = 0
+diffs.each do |diff|
+  total += diff
+end
+
+puts ''
+puts "# Total time elapsed: #{total}"
+puts ''

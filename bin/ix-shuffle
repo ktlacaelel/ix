@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+lines = []
+
+STDIN.each_line do |line|
+  lines.push(line.chomp)
+end
+
+lines.shuffle.each do |line|
+  puts line
+end

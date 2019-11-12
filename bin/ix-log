@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'securerandom'
+
+$stdout.sync = true
+$stdin.sync = true
+
+TRACE_ID = ENV['TRACE_ID'] || SecureRandom.hex
+
+def get_object(message)
+  object = {}
+  object[:trace_id] = TRACE_ID
+  object[:token_id] = SecureRandom.hex
+  object[:message] = message
+  object[:timestamp] = Time.now.to_f
+  object
+end
+
+def print_marker(marker)
+  object = get_object('ix log initiation marker')
+  puts JSON.dump(object)
+end
+
+print_markers = true
+
+if ARGV[0]
+  print_markers = false
+end
+
+if print_markers
+  object = get_object('ix log initiation marker')
+  puts JSON.dump(object)
+end
+
+STDIN.each_line do |line|
+  object = get_object(line.chomp!)
+  puts JSON.dump(object)
+end
+
+if print_markers
+  object = get_object('ix log termination marker')
+  puts JSON.dump(object)
+end

@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+prefix = ARGV.join(' ')
+
+STDIN.each_line do |line|
+  puts prefix + line.chomp
+end

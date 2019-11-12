@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+padding = ARGV[0].to_i
+suffix  = ARGV[1].to_s
+counter = ARGV[2].to_i
+
+STDIN.each_line do |line|
+  counter += 1
+  if padding == 0
+    template = "%s%s %s"
+  else
+    template = "%0.#{padding}d%s %s"
+  end
+
+  puts template % [counter, suffix, line]
+end

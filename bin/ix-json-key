@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+
+# Reads json strings (one per line) from stdin.
+# you pass keys as arguments and those are printed out as columns.
+
+require 'rubygems'
+require 'json'
+
+STDIN.each_line do |line|
+  begin
+    next unless line.include?('}')
+    object = JSON.parse(line)
+    string = []
+    ARGV.each do |argument|
+      if object[argument]
+        if object[argument].is_a?(String)
+          string.push(object[argument])
+        elsif object[argument].is_a?(Array)
+          object[argument].each do |element|
+            string.push("\n" + element.to_json) # will break if not an object!
+          end
+        else
+          string.push(object[argument].to_json)
+        end
+      else
+        string.push(argument)
+      end
+    end
+    if string.size > 0
+      puts string.join(" ")
+    end
+  rescue => error
+  # $stderr.puts line
+  # $stderr.puts error.message
+  # $stderr.puts error.backtrace
+  end
+end

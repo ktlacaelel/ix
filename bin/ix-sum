@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+total = 0
+
+STDIN.each_line do |line|
+  total += line.to_f
+end
+
+puts total
+
