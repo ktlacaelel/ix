@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  line  = line.chomp
+  array = line.scan(/\w+/)
+  array.each do |word|
+    puts word
+  end
+end
