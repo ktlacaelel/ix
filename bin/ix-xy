@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#
 
 require 'tmpdir'
 require 'optparse'
@@ -9,7 +8,7 @@ options = {}
 OptionParser.new do |opts|
 
   opts.banner = "
-    xy - Creates png charts using x y data from text.
+    #{File.basename($0)} - Creates png charts using x y data from text.
 
     Reads two numeric columns from stdin (x, y)
     and creates a png graphical chart.
@@ -79,4 +78,3 @@ Dir.mktmpdir do |dir|
   puts "open #{options[:output]}.png"
   
 end
-
