@@ -377,13 +377,13 @@ OptionParser.new do |opts|
     @configuration[:distribution] = :sample
   end
 
-  help_string = 'Scale, expand and show more detail on probabilistic data.'
-  opts.on('-c', '--scale [N]', OptionParser::DecimalInteger, help_string) do |value|
+  help_string = 'Scale, expand and show more detail on probabilistic bar data.'
+  opts.on('-b', '--bars [N]', OptionParser::DecimalInteger, help_string) do |value|
     @configuration[:scale] = value.to_i
   end
 
   help_string = 'Hide away points that dont have data.'
-  opts.on('-h', '--hide-points', help_string) do |value|
+  opts.on('-i', '--hide-points', help_string) do |value|
     @configuration[:hide_points] = true
   end
 
