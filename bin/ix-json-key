@@ -7,6 +7,8 @@
 require 'rubygems'
 require 'json'
 
+$stdout.sync = true
+
 STDIN.each_line do |line|
   begin
     next unless line.include?('}')
@@ -29,6 +31,7 @@ STDIN.each_line do |line|
     end
     if string.size > 0
       puts string.join(" ")
+      $stdout.flush
     end
   rescue => error
   # $stderr.puts line
