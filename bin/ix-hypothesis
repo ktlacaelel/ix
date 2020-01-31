@@ -133,7 +133,7 @@ class Array
     list.sort
   end
 
-  def to_bell(text, standard_deviations_to_show = 3, base = :population, kazu_dev = 1, percentage_scale)
+  def to_bell(text, standard_deviations_to_show = 3, base = :population, kazu_dev = 1, percentage_scale, hide)
 
     if base == :population
       sigma = population_standard_deviation
@@ -192,7 +192,9 @@ class Array
 
       size    = groups[sigma] ? groups[sigma].size : 0
 
-      next if size == 0
+      if hide
+        next if size == 0
+      end
 
       bell_line = []
       std_dev_ruler = "%3.3f" % ((index - sigmas_copy.size / 2) / kazu_dev.to_f)
@@ -344,6 +346,7 @@ end
 @configuration[:sigma] = 3
 @configuration[:distribution] = :normal
 @configuration[:scale] = 34
+@configuration[:hide_points] = false
 
 OptionParser.new do |opts|
 
@@ -377,6 +380,11 @@ OptionParser.new do |opts|
   help_string = 'Scale, expand and show more detail on probabilistic data.'
   opts.on('-c', '--scale [N]', OptionParser::DecimalInteger, help_string) do |value|
     @configuration[:scale] = value.to_i
+  end
+
+  help_string = 'Hide away points that dont have data.'
+  opts.on('-h', '--hide-points', help_string) do |value|
+    @configuration[:hide_points] = true
   end
 
   opts.on('-e', '--example', 'Give me more iformation about this program') do |value|
@@ -430,7 +438,8 @@ categories.each do |category|
     @configuration[:sigma],
     @configuration[:distribution],
     @configuration[:kazus_deviation],
-    @configuration[:scale]
+    @configuration[:scale],
+    @configuration[:hide_points],
   )
 end
 
