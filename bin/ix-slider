@@ -1,0 +1,201 @@
+#!/usr/bin/env ruby
+
+# TODO: decide if we should load current_value from flag or file override. 
+# TODO: allow user to type numbers to jump to a given part of the slider.
+
+require 'io/console'
+require 'timeout'
+require 'isna'
+require 'optparse'
+
+$options = {}
+
+# $options[:left_arrow]    ||= "\e[D"
+# $options[:right_arrow]   ||= "\e[C"
+$options[:left_arrow]    ||= 'h'
+$options[:right_arrow]   ||= 'l'
+$options[:up_arrow]      ||= 'k'
+$options[:down_arrow]    ||= 'j'
+$options[:bar_width]     ||= 40
+$options[:minimum_value] ||= 0
+$options[:maximum_value] ||= 100
+$options[:current_value] ||= 50
+$options[:running] = true
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{File.basename($0)} [OPTIONS]"
+
+  opts.on('-r', '--right-arrow [KEY]', 'Keyboard key to use as a right arrow.') do |value|
+    $options[:right_arrow] = value
+  end
+
+  opts.on('-l', '--left-arrow [KEY]', 'Keyboard key to use as a left arrow.') do |value|
+    $options[:left_arrow] = value
+  end
+
+  opts.on('-u', '--up-arrow [KEY]', 'Keyboard key to use as an up arrow.') do |value|
+    $options[:up_arrow] = value
+  end
+
+  opts.on('-d', '--down-arrow [KEY]', 'Keyboard key to use as a down arrow.') do |value|
+    $options[:down_arrow] = value
+  end
+
+  opts.on('-b', '--bar-width [NUMBER]', 'Number of chars to use for bar the bar width.') do |value|
+    $options[:bar_width] = value.to_i
+  end
+
+  opts.on('-m', '--minimum-value [NUMBER]', 'Minimum value of slider.') do |value|
+    $options[:minimum_value] = value.to_i
+  end
+
+  opts.on('-a', '--maximum-value [NUMBER]', 'Maximum value of slider.') do |value|
+    $options[:maximum_value] = value.to_i
+  end
+
+  opts.on('-c', '--current-value [NUMBER]', 'Current value of slider.') do |value|
+    $options[:current_value] = value.to_i
+  end
+
+  opts.on('-f', '--file [FILE]', 'The filename where the value of slider will be written to.') do |value|
+    $options[:file] = value
+  end
+
+end.parse!
+
+required_options = [
+  :left_arrow,
+  :right_arrow,
+  :up_arrow,
+  :down_arrow,
+  :bar_width,
+  :minimum_value,
+  :maximum_value,
+  :current_value,
+  :file
+]
+
+required_options.each do |option|
+  unless $options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+def readkey
+  c = ''
+  result = ''
+  $stdin.raw do |stdin|
+    c = stdin.getc
+    result << c
+    if c == "\e"
+      begin
+        while (c = Timeout::timeout(0.0001) { stdin.getc })
+          result << c
+        end
+      rescue Timeout::Error
+        # no action required
+      end
+    end
+  end
+  result
+end
+
+def legend
+  labels = {
+    $options[:right_arrow] => 'right',
+    $options[:left_arrow]  => 'left',
+    $options[:up_arrow]    => 'finish',
+    $options[:down_arrow]  => 'start',
+    'q'                    => 'quit'
+  }
+  parts = labels.keys.sort.map do |key|
+    "#{key.to_ansi.green.to_s} = #{labels[key]}"
+  end
+  parts * ', '
+end
+
+def print_slider(min, max, needle, open, close, spacer, marker)
+  print open
+  per_abstract_unit = (needle.to_f / max.to_f * $options[:bar_width])
+  print rainbow(marker, per_abstract_unit, $options[:bar_width])
+  print (spacer * ($options[:bar_width] - per_abstract_unit.to_i ))
+  print close
+  print " value: #{needle}   "
+end
+
+def rainbow(marker, current, max)
+  result = (marker * current)
+  percent = (100 / $options[:bar_width].to_f * current)
+  case percent
+  when 0..25
+    return result
+  when 25..50
+    return result.to_ansi.green.to_s
+  when 50..75
+    return result.to_ansi.yellow.to_s
+  when 75..100
+    return result.to_ansi.red.to_s
+  end
+end
+
+def update_file(file, value)
+  File.open(file, 'w+') do |file|
+    file.puts value
+  end
+end
+
+$stdout.sync = true
+puts legend
+
+if File.exists?($options[:file])
+  $options[:current_value] = File.read($options[:file]).to_i
+end
+
+Thread.new do
+  loop do
+    update_file($options[:file], $options[:current_value])
+    sleep 0.5
+    break unless $options[:running]
+  end
+end
+
+loop do
+  char = readkey
+  if char == 'q'
+    puts 'bye.'
+    $options[:running] = false
+    break
+  end
+  if char == $options[:right_arrow]
+    if ($options[:current_value] + 1) <= $options[:maximum_value]
+      $options[:current_value] += 1
+    end
+  end
+  if char == $options[:left_arrow]
+    if ($options[:current_value] - 1) >= $options[:minimum_value]
+      $options[:current_value] -= 1
+    end
+  end
+  if char == $options[:up_arrow]
+    $options[:current_value] = $options[:maximum_value]
+  end
+  if char == $options[:down_arrow]
+    $options[:current_value] = $options[:minimum_value]
+  end
+
+  print "\b" * 5000
+
+  print_slider(
+    $options[:minimum_value],
+    $options[:maximum_value],
+    $options[:current_value],
+    '[',
+    ']',
+    ' ',
+    '|'
+  )
+
+end
+
