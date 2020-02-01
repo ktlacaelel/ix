@@ -4,6 +4,7 @@
 require 'fileutils'
 require 'optparse'
 require 'ostruct'
+require 'isna'
 
 # Percentage bar.
 #
@@ -67,11 +68,19 @@ end
 class Array
 
   def mean
-    product = 0;
-    each do |number|
-      product += number
-    end
     product / size
+  end
+
+  def product
+    sum
+  end
+
+  def normalize(scale_min, scale_max)
+    map do |number|
+      divisor    = (number - min) * (scale_max - scale_min)
+      dividend   = max - min
+      divisor / dividend
+    end
   end
 
   def median
@@ -124,7 +133,7 @@ class Array
     list.sort
   end
 
-  def to_bell(text, standard_deviations_to_show = 3, base = :population, kazu_dev = 1)
+  def to_bell(text, standard_deviations_to_show = 3, base = :population, kazu_dev = 1, percentage_scale, hide)
 
     if base == :population
       sigma = population_standard_deviation
@@ -164,28 +173,89 @@ class Array
       return_value
     end
 
-    template = "%6s %15s   %-10s %-8s %s"
-    headers = ['sigma', 'deviation', 'samples', 'presence', 'probability']
+    template = "%6s %15s   %6s      %s"
+    headers = ['sigma', 'deviation', 'samples', 'percentage']
     puts template % headers 
-    template = "%6s %15.4f   %-10s %-8s %s"
+    template = "%6s %s   %s %s %s"
+
+    the_min = sigmas_copy.map do |sigma|
+      ((groups[sigma] ? groups[sigma].size : 0.0) / total.to_f) * 100
+	end.min
+
+    the_max = sigmas_copy.map do |sigma|
+      ((groups[sigma] ? groups[sigma].size : 0.0) / total.to_f) * 100
+	end.max
+
+    puts [the_min, the_max].inspect
 
     sigmas_copy.each_with_index do |sigma, index|
 
       size    = groups[sigma] ? groups[sigma].size : 0
-      percent = Percentage.new(total, size, 32)
 
-      bell_line = []
-      bell_line << "%3.3f" % ((index - sigmas_copy.size / 2) / kazu_dev.to_f)
-      bell_line << sigma
-      bell_line << (size.to_s)
-
-      if size > 0
-        bell_line << '->>'
-      else
-        bell_line << ''
+      if hide
+        next if size == 0
       end
 
-      bell_line << percent.to_bar
+      bell_line = []
+      std_dev_ruler = "%3.3f" % ((index - sigmas_copy.size / 2) / kazu_dev.to_f)
+      if std_dev_ruler == '0.000'
+		bell_line << ' ' + std_dev_ruler.to_ansi.green.to_s
+      else
+		bell_line << std_dev_ruler
+      end
+
+      if sigma == avg
+        bell_line << ("%15.4f" % [sigma.to_s]).to_ansi.green.to_s
+      else
+        bell_line << ("%15.4f" % [sigma.to_s])
+      end
+
+      if size > 0
+        bell_line << (size.to_s.ljust(10, ' ').to_ansi.green.to_s)
+      else
+        bell_line << '-'.ljust(10, ' ')
+      end
+
+      bell_line << ("%6.2f%% " % [(size.to_f / total.to_f) * 100]).to_s
+
+      # puts groups[sigma].inspect
+
+	  bn = [
+        the_min,
+        (size.to_f / total.to_f) * 100,
+        the_max
+	  ]
+
+      an = bn.normalize(
+		0,
+        percentage_scale
+	  )
+
+      # bell_line << Percentage.new(total, size, percentage_scale).to_bar
+
+      case (std_dev_ruler).to_f
+      when 0.000
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.pink.to_s
+      when 0..1
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.green.to_s
+      when -1..0
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.green.to_s
+      when 1..2
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+      when -2..1
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+      when 2..3
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.red.to_s
+      when -3..2
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.red.to_s
+      when 3..100
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.cyan.blink.to_s
+      when -3..-100
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.cyan.blink.to_s
+      else
+		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+      end
+
       puts template % bell_line
 
     end
@@ -196,7 +266,7 @@ class Array
 
   def to_stat(padding = 15)
     symbols  = ['x', 'µ', 'σ', 'P', 'S', 'VP', 'VS', 'N', '∑x']
-    template = symbols.map { |symbol| "#{symbol}:%-#{padding}.2f" }
+    template = symbols.map { |symbol| "#{symbol}: %-#{padding}.2f" }
     template = template.join(" ")
     bindings = [
       median,
@@ -275,6 +345,8 @@ end
 @configuration[:kazus_deviation] = 1
 @configuration[:sigma] = 3
 @configuration[:distribution] = :normal
+@configuration[:scale] = 34
+@configuration[:hide_points] = false
 
 OptionParser.new do |opts|
 
@@ -303,6 +375,16 @@ OptionParser.new do |opts|
   help_string = 'Render analysis as a sample standard deviation'
   opts.on('-a', '--sample', help_string) do |value|
     @configuration[:distribution] = :sample
+  end
+
+  help_string = 'Scale, expand and show more detail on probabilistic bar data.'
+  opts.on('-b', '--bars [N]', OptionParser::DecimalInteger, help_string) do |value|
+    @configuration[:scale] = value.to_i
+  end
+
+  help_string = 'Hide away points that dont have data.'
+  opts.on('-i', '--hide-points', help_string) do |value|
+    @configuration[:hide_points] = true
   end
 
   opts.on('-e', '--example', 'Give me more iformation about this program') do |value|
@@ -355,7 +437,9 @@ categories.each do |category|
     category,
     @configuration[:sigma],
     @configuration[:distribution],
-    @configuration[:kazus_deviation]
+    @configuration[:kazus_deviation],
+    @configuration[:scale],
+    @configuration[:hide_points],
   )
 end
 
