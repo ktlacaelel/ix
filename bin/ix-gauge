@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
+require 'isna'
+
 # Percentage bar.
 #
 # items  = (1..100).to_a
@@ -34,13 +36,13 @@ class Percentage
     padding = 0
     if color
       if to_i >= 0 and to_i < 50
-        filling = "[0;32;1m" + (bar * @pre_percentage.to_i) + "[0m"
+        filling = (bar * @pre_percentage.to_i).to_ansi.green.to_s
       end
       if to_i >= 50 and to_i < 80
-        filling = "[0;33;1m" + (bar * @pre_percentage.to_i) + "[0m"
+        filling = (bar * @pre_percentage.to_i).to_ansi.yellow.to_s
       end
       if to_i >= 80
-        filling = "[0;31;1m" + (bar * @pre_percentage.to_i) + "[0m"
+        filling = (bar * @pre_percentage.to_i).to_ansi.red.to_s
       end
       if filling.size > 0
         padding = 13
@@ -51,8 +53,7 @@ class Percentage
   end
 end
 
-max      = ARGV[0].to_f
-behavior = ARGV[1].to_i # 0 update, 1 print
+behavior = ARGV[0].to_i # 0 update, 1 print
 
 $stdout.sync = true
 
@@ -66,14 +67,20 @@ at_exit do
   puts ''
 end
 
+SPLIT_REGEX = /\d+/
+
 STDIN.each_line do |line|
   break if $break
+  next unless line =~ SPLIT_REGEX
+  chunks = line.scan(SPLIT_REGEX)
+  current_value = chunks[0].to_f
+  max_value = chunks[1].to_f
   if behavior == 0
     sleep 0.01
-    print "\b" * 100
-    print Percentage.new(max, line.to_f, 50).to_bar
+    print "\b" * 2000
+    print Percentage.new(max_value, current_value, 50).to_bar + line.chomp
   else
-    puts Percentage.new(max, line.to_f, 50).to_bar
+    puts Percentage.new(max_value, current_value, 50).to_bar + line.chomp
   end
 end
 
