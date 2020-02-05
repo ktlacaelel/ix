@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+counter = 0
+
+STDIN.each_char do |char|
+  counter += 1
+  print char
+  if counter == 4
+    print ' '
+    counter = 0
+    next
+  end
+end

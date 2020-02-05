@@ -48,8 +48,8 @@ class Percentage
         padding = 13
       end
     end
-    bindings = [filling, to_f, '%', @divisor]
-    "[%-#{@scale + padding}s%5.1f%s] %10.2f " % bindings
+    bindings = [filling, to_f, '%']
+    "[%-#{@scale + padding}s%5.1f%s]" % bindings
   end
 end
 
@@ -78,9 +78,9 @@ STDIN.each_line do |line|
   if behavior == 0
     sleep 0.01
     print "\b" * 2000
-    print Percentage.new(max_value, current_value, 50).to_bar + line.chomp
+    print Percentage.new(max_value, current_value, 50).to_bar + ' ' + line.chomp
   else
-    puts Percentage.new(max_value, current_value, 50).to_bar + line.chomp
+    puts Percentage.new(max_value, current_value, 50).to_bar + ' ' + line.chomp
   end
 end
 
