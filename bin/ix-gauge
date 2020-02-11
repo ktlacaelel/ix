@@ -49,11 +49,7 @@ class Percentage
       end
     end
     bindings = [filling, to_f, '%']
-<<<<<<< HEAD
-    "[%-#{@scale + padding}s%5.1f%s] " % bindings
-=======
     "[%-#{@scale + padding}s%5.1f%s]" % bindings
->>>>>>> cf7db60d2269624cdc916d8d130c0286e65dd124
   end
 end
 
