@@ -48,8 +48,8 @@ class Percentage
         padding = 13
       end
     end
-    bindings = [filling, to_f, '%', @divisor]
-    "[%-#{@scale + padding}s%5.1f%s] %10.2f " % bindings
+    bindings = [filling, to_f, '%']
+    "[%-#{@scale + padding}s%5.1f%s] " % bindings
   end
 end
 

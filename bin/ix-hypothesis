@@ -235,25 +235,25 @@ class Array
 
       case (std_dev_ruler).to_f
       when 0.000
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.pink.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.pink.to_s
       when 0..1
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.green.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.green.to_s
       when -1..0
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.green.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.green.to_s
       when 1..2
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.yellow.to_s
       when -2..1
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.yellow.to_s
       when 2..3
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.red.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.red.to_s
       when -3..2
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.red.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.red.to_s
       when 3..100
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.cyan.blink.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.cyan.blink.to_s
       when -3..-100
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.cyan.blink.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.cyan.blink.to_s
       else
-		bell_line << '|' + ('|' * (an[1])).to_s.to_ansi.yellow.to_s
+		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.yellow.to_s
       end
 
       puts template % bell_line
@@ -322,18 +322,6 @@ def print_help
   puts '  |group-c 3'
   puts '  |group-c 5'
   puts ''
-  puts ' NOTES!'
-  puts ''
-  puts '   x = Median.'
-  puts '   µ = Average / Mean.'
-  puts '   σ = Sigma or Standard Deviation.'
-  puts '   P = Population Standard Deviation.'
-  puts '   S = Sample Standard Deviation.'
-  puts '  VP = Variance of a population.'
-  puts '  VS = Variance of a sample.'
-  puts '   N = Number of elements in the sample/population.'
-  puts '  ∑x = Product of elements in the sample/population.'
-  puts ''
   puts '   Heva fun!'
   puts ''
 end
@@ -347,6 +335,7 @@ end
 @configuration[:distribution] = :normal
 @configuration[:scale] = 34
 @configuration[:hide_points] = false
+@configuration[:print_statistics] = false
 
 OptionParser.new do |opts|
 
@@ -387,6 +376,11 @@ OptionParser.new do |opts|
     @configuration[:hide_points] = true
   end
 
+  help_string = 'Print Statistical Breakdown.'
+  opts.on('-r', '--print-statistics', help_string) do |value|
+    @configuration[:print_statistics] = true
+  end
+
   opts.on('-e', '--example', 'Give me more iformation about this program') do |value|
     print_help
     exit 0
@@ -418,18 +412,66 @@ grand_total      = 0
 number_of_groups = 0
 categories       = sample.keys.sort
 
-print_header 'Statistical breakdown'
 categories.each do |category|
   grand_total      += sample[category][:total]
   number_of_groups += 1
-  puts "%-25s %-s" % [category, sample[category][:data].to_stat]
 end
 
-print_header 'Percentage breakdown per category'
-categories.each do |category|
-  percentage = Percentage.new(grand_total, sample[category][:data].sum, 66)
-  # puts "%-10s %-s" % [category, percentage.to_bar]
-  puts "%-s %s" % [percentage.to_bar, category]
+if @configuration[:print_statistics]
+
+  print_header 'Statistical breakdown'
+  
+  print_header 'Median'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].median]
+  end
+  
+  print_header 'Mean'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].mean]
+  end
+  
+  print_header 'Standard Deviation'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].standard_deviation]
+  end
+  
+  print_header 'Population Standard Deviation'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].population_standard_deviation]
+  end
+  
+  print_header 'Sample Standard Deviation'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].sample_standard_deviation]
+  end
+  
+  print_header 'Variance of a Population'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].variance(1)]
+  end
+  
+  print_header 'Variance of a Sample'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].variance(0)]
+  end
+  
+  print_header 'Count in Sample'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].size]
+  end
+  
+  print_header 'Product'
+  categories.each do |category|
+    puts "%-60s %19.6f" % [category, sample[category][:data].sum]
+  end
+
+  print_header 'Percentage breakdown per category'
+  categories.each do |category|
+    percentage = Percentage.new(grand_total, sample[category][:data].sum, 66)
+    # puts "%-10s %-s" % [category, percentage.to_bar]
+    puts "%-s %s" % [percentage.to_bar, category]
+  end
 end
 
 categories.each do |category|

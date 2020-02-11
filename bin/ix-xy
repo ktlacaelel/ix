@@ -61,8 +61,13 @@ Dir.mktmpdir do |dir|
     end
   end
 
+  colors = '#FFFFFF #000000 #404040 #FF0000 #FFA500 #66CDAA #CDB5CD #ADD8E6 #0000FF #DDA0DD #9500D3'
+  colors = ('#FF0000 ' * 11)
+
+  puts colors.inspect
+
   File.open(script_path, 'w+') do |script|
-    script.puts "set term png size 800,600"
+    script.puts "set term png size 4800,600 #{colors}"
     script.puts "set output \"#{options[:output]}.png\""
     script.puts "set title \"#{options[:title]}\""
     script.puts "set xlabel \"#{options[:x_label]}\""
