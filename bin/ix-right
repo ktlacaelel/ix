@@ -1,2 +1,3 @@
-#!/usr/bin/env bash
-ix reverse | ix transpose | ix tac | ix transpose
+#!/usr/bin/env ruby
+
+system 'ix reverse | ix transpose | ix tac | ix transpose'

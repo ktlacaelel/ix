@@ -1,1 +1,3 @@
+#!/usr/bin/env ruby
+
 ix bcat | ix prefix '<pre>' | ix suffix '</pre>'

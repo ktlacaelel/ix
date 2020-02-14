@@ -1,1 +1,3 @@
-ix scan '[a-f0-9]{32}'
+#!/usr/bin/env ruby
+
+system "ix scan '[a-f0-9]{32}'"

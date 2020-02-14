@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-application=$1
-target_path=`dirname $0`
-target_file="$target_path/ix-$application"
+application = ARGV[0]
+target_path = File.dirname(__FILE__)
+target_file = "#{target_path}/ix-#{application}"
 
-vim $target_file
-chmod +x $target_file
+system "vim #{target_file}"
+system "chmod +x #{target_file}"
 

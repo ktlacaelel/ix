@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-ix shuffle | tail -1
+system 'ix shuffle | tail -1'
 

@@ -419,49 +419,47 @@ end
 
 if @configuration[:print_statistics]
 
-  print_header 'Statistical breakdown'
-  
-  print_header 'Median'
+  print_header 'Median'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].median]
   end
   
-  print_header 'Mean'
+  print_header 'Mean'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].mean]
   end
   
-  print_header 'Standard Deviation'
+  print_header 'Standard Deviation'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].standard_deviation]
   end
   
-  print_header 'Population Standard Deviation'
+  print_header 'Population Standard Deviation'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].population_standard_deviation]
   end
   
-  print_header 'Sample Standard Deviation'
+  print_header 'Sample Standard Deviation'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].sample_standard_deviation]
   end
   
-  print_header 'Variance of a Population'
+  print_header 'Variance of a Population'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].variance(1)]
   end
   
-  print_header 'Variance of a Sample'
+  print_header 'Variance of a Sample'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].variance(0)]
   end
   
-  print_header 'Count in Sample'
+  print_header 'Count of samples'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].size]
   end
   
-  print_header 'Product'
+  print_header 'Product'.to_ansi.green.to_s
   categories.each do |category|
     puts "%-60s %19.6f" % [category, sample[category][:data].sum]
   end

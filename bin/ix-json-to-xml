@@ -1,8 +1,1 @@
 
-require 'nokogiri'
-require 'json'
-
-STDIN.each_line do |line|
-  object = JSON.parse(line)
-end
-

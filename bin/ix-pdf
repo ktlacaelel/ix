@@ -1,1 +1,4 @@
+#!/usr/bin/env ruby
+
 groff -Tps | open -f -a /Applications/Preview.app/
+

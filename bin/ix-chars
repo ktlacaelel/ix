@@ -1,1 +1,4 @@
-ix scan '.'
+#!/usr/bin/env ruby
+
+system "ix scan '.'"
+

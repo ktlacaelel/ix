@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-source_application=$1
-target_application=$2
-target_path=`dirname $0`
-source_file="$target_path/ix-$source_application"
-target_file="$target_path/ix-$target_application"
+source_application = ARGV[0]
+target_application = ARGV[1]
+target_path = File.dirname(__FILE__)
+source_file = "#{target_path}/ix-#{source_application}"
+target_file = "#{target_path}/ix-#{target_application}"
 
-mv $source_file $target_file
+system "mv #{source_file} #{target_file}"
 

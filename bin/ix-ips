@@ -1,3 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-ix scan '\d+\.\d+\.\d+\.\d+'
+system "ix scan '\\d+\\.\\d+\\.\\d+\\.\\d+'"
+

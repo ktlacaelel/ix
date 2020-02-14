@@ -1,10 +1,14 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-if [ "$1" == "" ]; then
-    ls $(dirname "$(which ix)") | grep '^ix' | column
+if ARGV[0]
+  command = "ix-#{ARGV[0]}"
+  args = ARGV
+  args.shift
+  system(command, *args)
 else
-    command="ix-$1"
-    shift 1
-    $command "$@" 
-fi
+  dir = File.dirname($0)
+  Dir.glob("#{dir}/ix-*").each do |tool|
+    puts "#{File.basename(tool)}"
+  end
+end
 

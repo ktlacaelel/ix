@@ -1,1 +1,3 @@
-ix words | ix box | ix chain | ix gsub '\w' ' ' | par -j | ix shuffle | ix box3
+#!/usr/bin/env bash
+
+system "ix words | ix box | ix chain | ix gsub '\w' ' ' | par -j | ix shuffle | ix box3"
