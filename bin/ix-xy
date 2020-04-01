@@ -1,54 +1,122 @@
 #!/usr/bin/env ruby
 
 require 'tmpdir'
+require 'isna'
 require 'optparse'
 
 options = {}
+options[:title] = 'title'
+options[:x_label] = 'x'
+options[:y_label] = 'y'
+options[:graph_width] = 800
+options[:graph_height] = 600
+options[:output] = 'output'
+
+# option[title] = 'default value'
+# option[y_label] = 'default value'
+# option[x_label] = 'default value'
+# options[:x_max] = 0
+# options[:x_min] = 0
+# options[:y_max] = 0
+# options[:y_min] = 0
+# option[graph_width] = 'default value'
+# option[graph_height] = 'default value'
+# option[output] = 'default value'
 
 OptionParser.new do |opts|
 
-  opts.banner = "
-    #{File.basename($0)} - Creates png charts using x y data from text.
+  basename = File.basename($0).to_ansi.green.to_s
+  options_hint = "[OPTIONS]".to_ansi.blink.red.to_s
+  opts.banner = "Usage: #{basename} #{options_hint}"
 
-    Reads two numeric columns from stdin (x, y)
-    and creates a png graphical chart.
-
-    Usage: cat data | #{File.basename($0)} [options]
-  "
-
-  opts.on("-tTITLE", "--title=TITLE", "title of chart") do |v|
-    options[:title] = v
+  opts.on('-t', '--title [TITLE]', 'Title.') do |value|
+    options[:title] = value
   end
 
-  opts.on("-xTEXT", "--x-label=TEXT", "label for x axis") do |v|
-    options[:x_label] = v
+  opts.on('-y', '--y-label [TEXT]', 'Y label.') do |value|
+    options[:y_label] = value
   end
 
-  opts.on("-yTEXT", "--y-label=TEXT", "label for y axis") do |v|
-    options[:y_label] = v
+  opts.on('-x', '--x-label [TEXT]', 'X label.') do |value|
+    options[:x_label] = value
   end
 
-  opts.on("-oOUTPUT_NAME", "--output-name=OUTPUT_NAME", "name of output file (example: speed_vs_time") do |v|
-    options[:output] = v
+  opts.on('-m', '--x-max [NUMBER]', 'X max.') do |value|
+    options[:x_max] = value
+  end
+
+  opts.on('-i', '--x-min [NUMBER]', 'X min.') do |value|
+    options[:x_min] = value
+  end
+
+  opts.on('-a', '--y-max [NUMBER]', 'Y max.') do |value|
+    options[:y_max] = value
+  end
+
+  opts.on('-n', '--y-min [NUMBER]', 'Y min.') do |value|
+    options[:y_min] = value
+  end
+
+  opts.on('-g', '--graph-width [NUMBER]', 'Graph width.') do |value|
+    options[:graph_width] = value
+  end
+
+  opts.on('-r', '--graph-height [NUMBER]', 'Graph height.') do |value|
+    options[:graph_height] = value
+  end
+
+  opts.on('-o', '--output [SNAKE]', 'Output.') do |value|
+    options[:output] = value
+  end
+
+  opts.on('-s', '--stats', 'Stats.') do |value|
+    options[:stats] = value
   end
 
 end.parse!
 
-unless options[:title]
-  options[:title] = 'title'
+required_options = [
+  :title,
+  :y_label,
+  :x_label,
+  :graph_width,
+  :graph_height,
+  :output,
+]
+
+ranges = [
+  :x_max,
+  :x_min,
+  :y_max,
+  :y_min,
+]
+
+need_ranges = ranges.any? { |k| options[k] }
+
+if need_ranges
+  ranges.each do |r|
+    required_options.push(r)
+  end
 end
 
-unless options[:x_label]
-  options[:x_label] = 'x'
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s.to_ansi.red.to_s} was not given."
+    exit 1
+  end
 end
 
-unless options[:y_label]
-  options[:y_label] = 'y'
+def pretty_options(hash, width = 20)
+  r = ''
+  hash.keys.sort.each do |key|
+    k = key.to_s.ljust(width, '.')
+    v = hash[key].to_s.rjust(width, '.')
+    r << [k, v] * ' ' + "\n"
+  end
+  r
 end
+puts pretty_options(options)
 
-unless options[:output]
-  options[:output] = 'output'
-end
 
 Dir.mktmpdir do |dir|
 
@@ -62,20 +130,26 @@ Dir.mktmpdir do |dir|
   end
 
   File.open(script_path, 'w+') do |script|
-    script.puts "set term png size 800,600"
+    script.puts "set term png size #{options[:graph_width]},#{options[:graph_height]}"
     script.puts "set output \"#{options[:output]}.png\""
     script.puts "set title \"#{options[:title]}\""
     script.puts "set xlabel \"#{options[:x_label]}\""
     script.puts "set ylabel \"#{options[:y_label]}\""
-    script.puts "set grid"
-    script.puts "set timestamp"
-    script.puts "plot '#{data_path}' notitle with points linecolor rgb '#FF0000'"
-    # script.puts "plot '#{data_path}' notitle with points linecolor rgb '#FF0000' pointtype 8"
-    script.puts "quit"
+    script.puts 'set grid'
+    script.puts 'set timestamp'
+    if options[:stats]
+      script.puts "stats '#{data_path}'"
+    end
+    if need_ranges
+      script.puts "plot [#{options[:x_min]}:#{options[:x_max]}][#{options[:y_min]}:#{options[:y_max]}] '#{data_path}' notitle with points linecolor rgb '#FF0000'"
+    else
+      script.puts "plot '#{data_path}' notitle with points linecolor rgb '#FF0000'"
+    end
+    script.puts 'quit'
   end
 
   system "gnuplot #{script_path}"
   puts "open #{options[:output]}.png"
-  
+
 end
 
