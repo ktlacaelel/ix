@@ -135,6 +135,15 @@ class Array
 
   def to_bell(text, standard_deviations_to_show = 3, base = :population, kazu_dev = 1, percentage_scale, hide)
 
+    if uniq.size == 1
+      the_variable = text.to_ansi.red.to_s
+      the_value = uniq.first.to_s.to_ansi.green.to_s
+      puts ''
+      puts "# All values of #{the_variable} where found to have the value of #{the_value}"
+      puts '-' * 80
+      return
+    end
+
     if base == :population
       sigma = population_standard_deviation
     end
@@ -186,7 +195,7 @@ class Array
       ((groups[sigma] ? groups[sigma].size : 0.0) / total.to_f) * 100
 	end.max
 
-    puts [the_min, the_max].inspect
+    # puts [the_min, the_max].inspect
 
     sigmas_copy.each_with_index do |sigma, index|
 
@@ -218,8 +227,6 @@ class Array
 
       bell_line << ("%6.2f%% " % [(size.to_f / total.to_f) * 100]).to_s
 
-      # puts groups[sigma].inspect
-
 	  bn = [
         the_min,
         (size.to_f / total.to_f) * 100,
@@ -231,11 +238,9 @@ class Array
         percentage_scale
 	  )
 
-      # bell_line << Percentage.new(total, size, percentage_scale).to_bar
-
       case (std_dev_ruler).to_f
       when 0.000
-		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.pink.to_s
+        bell_line << '|' + ('|' * an[1]).to_s.to_ansi.pink.to_s
       when 0..1
 		bell_line << '|' + ('|' * an[1]).to_s.to_ansi.green.to_s
       when -1..0
