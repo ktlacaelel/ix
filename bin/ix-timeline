@@ -1,0 +1,241 @@
+#!/usr/bin/env ruby
+
+class Token
+  REGEX = /(^)(\d+)(\s+)(\w+)(\s+)(.*)/
+  attr_accessor :column
+  def initialize(string)
+    @string = string
+    @valid = (@string =~ REGEX)
+    @parts = @string.scan(REGEX)[0]
+  end
+  def valid?
+    @valid
+  end
+  def timestamp
+    @parts[1].to_i
+  end
+  def variable
+    @parts[3]
+  end
+  def value
+    @parts[5].to_f
+  end
+  def to_h
+    {
+      :timestamp => timestamp,
+      :variable => variable,
+      :value => value
+    }
+  end
+end
+
+# title
+# y_label
+# x_label
+# output
+# graph_width
+# graph_height
+# debug
+
+require 'isna'
+require 'optparse'
+
+options = {}
+
+options[:title] = 'title'
+options[:y_label] = 'y'
+options[:x_label] = 'x'
+options[:output] = 'output'
+options[:graph_width] = 800
+options[:graph_height] = 600
+options[:debug] = false
+
+OptionParser.new do |opts|
+
+  basename = File.basename($0).to_ansi.green.to_s
+  options_hint = "[OPTIONS]".to_ansi.blink.red.to_s 
+  opts.banner = "Usage: #{basename} #{options_hint}"
+
+  opts.on('-t', '--title [TITLE]', 'Title.') do |value|
+    options[:title] = value
+  end
+
+  opts.on('-y', '--y-label [Y_LABEL]', 'Y label.') do |value|
+    options[:y_label] = value
+  end
+
+  opts.on('-x', '--x-label [X_LABEL]', 'X label.') do |value|
+    options[:x_label] = value
+  end
+
+  opts.on('-o', '--output [OUTPUT]', 'Output.') do |value|
+    options[:output] = value
+  end
+
+  opts.on('-g', '--graph-width [GRAPH_WIDTH]', 'Graph width.') do |value|
+    options[:graph_width] = value
+  end
+
+  opts.on('-r', '--graph-height [GRAPH_HEIGHT]', 'Graph height.') do |value|
+    options[:graph_height] = value
+  end
+
+  opts.on('-d', '--debug [DEBUG]', 'Debug.') do |value|
+    options[:debug] = value
+  end
+
+
+end.parse!
+
+required_options = [
+  :title, 
+  :y_label, 
+  :x_label, 
+  :output, 
+  :graph_width, 
+  :graph_height, 
+]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s.to_ansi.red.to_s} was not given."
+    exit 1
+  end
+end
+
+def pretty_options(hash, width = 20)
+  r = ''
+  hash.keys.sort.each do |key|
+    k = key.to_s.ljust(width, '.')
+    v = hash[key].to_s.rjust(width, '.')
+    r << [k, v] * ' ' + "\n"
+  end
+  r
+end
+puts pretty_options(options)
+
+
+tokens = []
+
+# timestamp name value
+STDIN.each_line do |line|
+  token = Token.new(line)
+  next unless token.valid?
+  tokens.push(token)
+end
+
+variables = tokens.map { |token| token.variable }
+variable_map = {}
+variables.uniq.each_with_index do |variable, index|
+  variable_map[index + 1] = variable
+end
+puts variable_map.inspect
+tokens.each do |token|
+  variable_map.each do |column, variable|
+    if token.variable == variable
+      token.column = column
+    end
+  end
+end
+
+token_timestamp_map = {}
+tokens.each do |token|
+  token_timestamp_map[token.timestamp] ||= []
+  token_timestamp_map[token.timestamp].push(token)
+end
+
+# generate gnuplot data format
+require 'time'
+class Integer
+  def to_gnuplot_date
+    Time.at(self).strftime "%d/%m/%Y %H:%M:%S"
+  end
+end
+
+require 'tmpdir'
+Dir.mktmpdir do |dir|
+  # create data file
+
+  data_file = "#{dir}/data.file"
+
+  File.open(data_file, 'w+') do |file|
+    token_timestamp_map.each do |timestamp, tokens|
+	  elements = []
+	  elements.push(timestamp.to_gnuplot_date)
+
+      min_column = 1
+      max_column = tokens.map { |t| t.column }.max
+      unexistant_columns = (min_column..max_column).to_a - tokens.map { |t| t.column }
+
+      unexistant_columns.each_with_index do |column, index|
+        unless (tokens.map { |t| t.column }).include?(column)
+          if column < (tokens.max { |t| t.column }.column)
+            elements.push(0)
+          end
+        end
+      end
+
+      tokens.sort do |token|
+        token.column
+      end.reverse.map do |token|
+        token.value
+      end.each do |value|
+	    elements.push(value)
+      end
+
+      unexistant_columns.each_with_index do |column, index|
+        unless (tokens.map { |t| t.column }).include?(column)
+          if column > (tokens.max { |t| t.column }.column)
+            elements.push(0)
+          end
+        end
+      end
+
+	  file.puts (elements * ' ')
+    end
+  end
+
+  # puts "cat #{data_file}"
+  # system "cat #{data_file}"
+
+  script_file = "#{dir}/script.file"
+  
+  File.open(script_file, 'w+') do |file|
+    file.puts '#!/usr/bin/env gnuplot'
+    file.puts "set term png transparent truecolor size #{options[:graph_width]},#{options[:graph_height]}"
+
+    file.puts 'set output ' + (options[:output] + '.png').inspect
+
+    file.puts 'set tics textcolor rgb "gray"'
+    file.puts 'set xlabel textcolor rgb "gray"'
+    file.puts 'set ylabel textcolor rgb "gray"'
+    file.puts 'set border 1 front lc rgb "gray"'
+
+    file.puts 'set xdata time'
+    file.puts 'set timefmt "%d/%m/%Y %H:%M:%S"'
+    file.puts 'set format x "%d/%m/%Y %H:%M:%S"'
+    file.puts 'set xtics rotate by 345'
+    file.puts 'set xlabel ' + options[:x_label].inspect + ' textcolor rgb "gray"'
+    file.puts 'set ylabel ' + options[:y_label].inspect + ' textcolor rgb "gray"'
+    file.puts 'set title ' + options[:title].inspect + ' textcolor rgb "gray"'
+    file.puts 'set key reverse Left outside' + ' textcolor rgb "gray"'
+    file.puts 'set grid'
+    # file.puts 'set style data linespoints'
+    file.puts 'set style data points'
+
+    file.puts 'set timestamp' + ' textcolor rgb "gray"'
+    # file.puts "stats '#{data_file}'"
+
+    vars = []
+    variable_map.each do |column, variable|
+      vars.push("\"#{data_file}\" using 1:#{column + 2} title #{variable.inspect} with points")
+    end
+
+    file.puts "plot #{vars.join(', \\' + "\n")}"
+
+  end
+
+  # puts "cat #{script_file}"
+  # system "cat #{script_file}"
+
+  system "gnuplot #{script_file}"
+end

@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = %q{ix-cli}
-  spec.version = "0.0.1"
+  spec.version = "0.0.2"
   spec.date = %q{2020-02-05}
   spec.summary = %q{ix - string manipulation tools}
   spec.author = 'Kazuyoshi Tlacaelel'
@@ -253,6 +253,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'ix-text-to-morse'
   spec.executables << 'ix-tick'
   spec.executables << 'ix-time'
+  spec.executables << 'ix-timeline'
   spec.executables << 'ix-times'
   spec.executables << 'ix-timestamp'
   spec.executables << 'ix-timestamp-sort'
