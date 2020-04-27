@@ -1,0 +1,135 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-m', '--min-sigma [min]', 'Min sigma.') do |value|
+    options[:min_sigma] = value.gsub(/\\/, '').to_f
+  end
+
+  opts.on('-a', '--max-sigma [max]', 'Max sigma.') do |value|
+    options[:max_sigma] = value.gsub(/\\/, '').to_f
+  end
+
+  opts.on('-c', '--column [max]', 'Col to be parsed.') do |value|
+    options[:column] = value.to_i
+  end
+
+  opts.on('-k', '--kdev [max]', 'kdev.') do |value|
+    options[:kdev] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:min_sigma, :max_sigma, :column, :kdev]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+class Array
+  def mean
+    product / size
+  end
+
+  def product
+    sum
+  end
+  def sum_of_squares(avg = nil)
+    avg = mean unless avg
+    sqares = map do |number|
+      result = number - avg
+      result ** 2
+    end
+    sqares.sum
+  end
+
+  def variance(minus = 0)
+    sum_of_squares / (size - minus)
+  end
+
+  def standard_deviation
+    Math.sqrt(variance(1.5))
+  end
+
+  def population_standard_deviation
+    Math.sqrt(variance(0))
+  end
+
+  def median
+    return size[0] if size == 1
+    self[(size + 1) / 2]
+  end
+
+  def sample_standard_deviation
+    med = median
+    sqr = map do |number|
+      result = number - med
+      result ** 2
+    end
+    Math.sqrt(sqr.mean)
+  end
+
+  def sum
+    inject do |cumulative, value|
+      cumulative += value
+    end
+  end
+
+end
+
+data = []
+
+STDIN.each_line do |line|
+  line.chomp!
+  index = options[:column]
+  item = line.split(' ')[index - 1]
+  data.push({ :number => item.to_f, :line => line })
+end
+
+numbers = data.map do |object|
+  object[:number]
+end
+
+options[:standard_deviation] = numbers.standard_deviation
+options[:min_deviation_from_mean] = (options[:min_sigma] * options[:standard_deviation] + numbers.mean)
+options[:max_deviation_from_mean] = (options[:max_sigma] * options[:standard_deviation] + numbers.mean)
+
+data.each do |object|
+
+  smaller_than_max = (object[:number] > options[:min_deviation_from_mean])
+  bigger_than_min  = (object[:number] < options[:max_deviation_from_mean])
+
+  # $stderr.puts [
+  #   smaller_than_max,
+  #   object[:number],
+  #   bigger_than_min,
+  #   options[:min_deviation_from_mean],
+  #   options[:max_deviation_from_mean]
+  # ].map { |x| x.inspect } * ' '
+  
+
+  if smaller_than_max && bigger_than_min
+    puts object[:line]
+  end
+end
+
+def pretty_options(hash, width = 20)
+  r = ''
+  hash.keys.sort.each do |key|
+    k = key.to_s.ljust(width, '.')
+    v = hash[key].to_s.rjust(width, '.')
+    r << [k, v] * ' ' + "\n"
+  end
+  r
+end
+
+# $stderr.puts pretty_options(options)
+
