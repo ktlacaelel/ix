@@ -10,7 +10,6 @@ end
 trap('QUIT', &shutdown)
 trap('INT', &shutdown)
 trap('TERM', &shutdown)
-trap('KILL', &shutdown)
 
 total_requests = 0
 requests_per_second = 0
