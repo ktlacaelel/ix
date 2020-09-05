@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 class Token
-  REGEX = /(^)(\d+)(\s+)(\w+)(\s+)(.*)/
+  REGEX = /(^)([^ ]+)(\s+)(\w+)(\s+)(.*)/
   attr_accessor :column
   def initialize(string)
     @string = string
