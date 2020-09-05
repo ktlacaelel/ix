@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-
-application = ARGV[0]
-target_path = File.dirname(__FILE__)
-target_file = "#{target_path}/ix-#{application}"
-
-system "cat #{target_file}"
