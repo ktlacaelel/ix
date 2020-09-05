@@ -1,0 +1,88 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'optparse'
+require 'isna'
+
+options = {}
+options[:count] = 10
+options[:errors] = false
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-k', '--keys [KEYS]', 'List of keys to parse from json separated by :.') do |value|
+    options[:keys] = value
+  end
+
+  opts.on('-c', '--count [NUMBER]', 'Number of top N items to show.') do |value|
+    options[:count] = value.to_i
+  end
+
+  opts.on('-e', '--errors', 'If we should report errors.') do |value|
+    options[:errors] = value
+  end
+
+end.parse!
+
+required_options = [:keys]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+map = {}
+keys = options[:keys].split(':')
+
+STDIN.each_line do |line|
+  begin
+    object = JSON.parse(line)
+    object.each do |k, v|
+      next unless keys.include?(k)
+      submap = map[k] ||= {}
+      submap[v] ||= 0
+      submap[v] += 1
+    end
+  rescue => error
+    if options[:errors]
+      $stderr.puts error.message
+    end
+  end
+end
+
+def print_map(map, sample)
+  map.each do |category, stats|
+    values = []
+    total = 0
+
+    counter = 0
+    stats.values.sort.reverse.each do |value_1|
+      stats.each do |key, value_2|
+        if value_1 == value_2
+          counter += 1
+          break if counter > sample
+          total += value_1
+          values.push({ :value => value_1, :key => key })
+        end
+      end
+    end
+
+    puts ""
+    puts "#{category.to_s.to_ansi.cyan.to_s} (#{total})"
+
+    values.each do |object|
+      percentage = "%2.2f" % (object[:value] / total.to_f * 100)
+      h_percentage = (percentage.to_s + '%').rjust(6, ' ').to_ansi.yellow.to_s
+      value = object[:value].to_s.rjust(10, ' ').to_ansi.green.to_s
+      key = object[:key]
+      puts "%s %s %s" % [value, h_percentage, key]
+    end
+
+  end
+end
+
+print_map(map, options[:count])
+
