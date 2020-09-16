@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = %q{ix-cli}
-  spec.version = "0.0.7"
+  spec.version = "0.0.9"
   spec.date = %q{2020-02-05}
   spec.summary = %q{ix - string manipulation tools}
   spec.author = 'Kazuyoshi Tlacaelel'
@@ -201,6 +201,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'ix-reverse'
   spec.executables << 'ix-right'
   spec.executables << 'ix-rm'
+  spec.executables << 'ix-rot5'
   spec.executables << 'ix-rot13'
   spec.executables << 'ix-rot3'
   spec.executables << 'ix-rps'

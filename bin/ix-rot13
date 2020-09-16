@@ -3,7 +3,12 @@
 normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 rot13  = "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM"
 
-STDIN.each_line do |line|
-  puts line.tr!(normal, rot13)
+STDIN.each_char do |char|
+  candidate = char.tr!(normal, rot13)
+  if candidate
+    print candidate
+  else
+    print char
+  end
 end
 

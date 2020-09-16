@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'isna'
+
+UNIVERSE = (0..9).to_a
+ROT = 5
+DIGIT_REGEX = /^\d$/
+
+def resolve(set, candidate)
+  needle = set.index(candidate)
+  if (needle + ROT) > set.size
+    return (needle - set.size + ROT)
+  end
+  if (needle + ROT) < set.size
+    return needle + ROT
+  end
+  if (needle == 5)
+    return 0
+  end
+end
+
+STDIN.each_char do |char|
+  next if char.chomp == ''
+  unless char =~ DIGIT_REGEX
+    print char
+    next
+  end
+  rotation = resolve(UNIVERSE, char.to_i)
+  m = (0..9).to_a.map do |n|
+    if n.to_s == char
+      char.to_ansi.green.to_s
+    else
+      n.to_s
+    end
+  end
+  # puts "#{rotation.to_s.to_ansi.red.to_s} = [" + (m * ', ') + "]"
+  print rotation
+end
+
