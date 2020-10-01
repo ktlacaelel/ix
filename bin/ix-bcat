@@ -175,10 +175,42 @@ class Bcat
   end
 end
 
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-p', '--pre', 'Pre.') do |value|
+    options[:pre] = value
+  end
+
+
+end.parse!
+
+required_options = []
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
 data = []
 
 STDIN.each_line do |line|
   data.push(line)
 end
 
+if options[:pre]
+  puts '<pre>'
+end
+
 puts Bcat::ANSI.new(data).to_html
+
+if options[:pre]
+  puts '</pre>'
+end
+

@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = %q{ix-cli}
-  spec.version = "0.0.9"
+  spec.version = "0.0.10"
   spec.date = %q{2020-02-05}
   spec.summary = %q{ix - string manipulation tools}
   spec.author = 'Kazuyoshi Tlacaelel'
@@ -183,6 +183,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'ix-pick'
   spec.executables << 'ix-planning-tickets'
   spec.executables << 'ix-prefix'
+  spec.executables << 'ix-prepend'
   spec.executables << 'ix-pretty'
   spec.executables << 'ix-print-and-run'
   spec.executables << 'ix-psd-to-json'
