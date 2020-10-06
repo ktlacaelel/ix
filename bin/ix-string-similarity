@@ -1,152 +1,205 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
-require 'ostruct'
+class Chunk
+  attr_accessor :char_1
+  attr_accessor :char_2
+  attr_accessor :index_1
+  attr_accessor :index_2
 
-configuration = OpenStruct.new
+  def initialize(c1, c2, i1, i2)
+    @char_1 = c1
+    @char_2 = c2
+    @index_1 = i1
+    @index_2 = i2
+  end
+
+  def to_s
+    "#{char_1} #{char_2} #{index_1} #{index_2}"
+  end
+end
+
+class Similarity
+  CHAR_REGEX = /./
+
+  attr_accessor :string_1
+  attr_accessor :string_2
+
+  def initialize(string_1, string_2)
+    @string_1 = string_1
+    @string_2 = string_2
+  end
+
+  def tokens
+    chunks = []
+    string_1.scan(CHAR_REGEX).each_with_index do |char_1, index_1|
+      string_2.scan(CHAR_REGEX).each_with_index do |char_2, index_2|
+        next if char_1 != char_2
+        chunks.push(Chunk.new(char_1, char_2, index_1, index_2))
+      end
+    end
+    chunks
+  end
+
+  def count
+    counter = 0
+    prev = false
+    tokens.each_with_index do |chunk, index|
+
+      unless prev
+        prev = chunk.index_1
+        next
+      end
+
+      if prev == (chunk.index_1 - 1)
+        counter += 1
+      end
+
+      prev = chunk.index_1
+    end
+
+    counter
+  end
+
+  def score
+    desired = (string_1.size + string_2.size) / 2
+    size_thresh = ([string_1.size, string_2.size].sort.first.to_f / desired)
+    compatibility_thresh = (count.to_f + 1) / string_1.size
+    (size_thresh + compatibility_thresh).to_f / 2
+  end
+end
+
+require 'optparse'
+
+options = {}
+options[:threshold] = 0.8
 
 OptionParser.new do |opts|
 
-  opts.banner = "Find similarity in a set of strings."
-  opts.separator ''
-  opts.separator "Usage: #{File.basename($0)} [OPTIONS]"
-  opts.separator ''
+  opts.banner = "Usage: #{$0} [OPTIONS]"
 
-  configuration.group = false
-  configuration.threshold = 50
-  configuration.summary = false
-
-  description = "Group input in batches and process each individually (faster)"
-  opts.on("-g", "--group", description) do |v|
-    configuration.group = v
+  opts.on('-t', '--threshold [NUMBER]', 'Threshold default value is 0.8.') do |value|
+    options[:threshold] = value.to_f
   end
-
-  description = "Limit the number of results by threshold, default is 50"
-  opts.on("-t", "--threshhold [NUMBER]", OptionParser::DecimalNumeric, description) do |v|
-    configuration.threshold = v
-  end
-
-  description = "Print a Summary of the groups found"
-  opts.on("-s", "--summary", description) do |v|
-    configuration.summary = v
-  end
-
-
-  opts.separator ''
 
 end.parse!
 
-# puts configuration.inspect
-
-class Array
-  def product
-    inject do |cumulative, value|
-      cumulative += value
-    end
+required_options = [:threshold]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
   end
 end
 
-class String
-  def to_a
-    array = []
-    size.times do |n|
-      array << self[n]
-    end
-    array
-  end
+# hash = {
+#   'line' => [
+#     { :line => 'line', :score => 1 },
+#   ]
+# }
 
-  def scores(other_string)
-    longest_string = nil
-    if other_string.size > self.size
-      longest_string = other_string
-      shortest_string = self
-    else
-      longest_string = self
-      shortest_string = other_string
-    end
-    scores = longest_string.to_a.map do |char|
-      0
-    end
-    shortest_string.size.times do |index|
-      if shortest_string[index] == longest_string[index]
-        scores[index] = 1
-      end
-    end
-    scores
-  end
-
-  def similarity(other_string)
-    scores(other_string).product * 100.0 / size
-  end
-end
-
-class TargetString
-  attr_accessor :evaluated
-  attr_accessor :data
-  def to_s
-    data
-  end
-end
-
-# client
-
-strings = []
+hash = {}
+lines = 0
 
 STDIN.each_line do |line|
-  next if line.chomp == ''
-  strings << line.chomp
-end
-
-strings.sort! do |n1, n2|
-  n1.size <=> n2.size
-end
-  
-strings.reverse!
-
-strings.map! do |string|
-  target_string = TargetString.new
-  target_string.evaluated = false
-  target_string.data = string
-  target_string
-end
-
-if configuration.group
-  groups = strings.group_by do |string|
-    string.data.size
-  end
-else
-  groups = { 0 => strings }
-end
-
-counter = 0
-groups.each do |key, group|
-  group.each do |string_1|
-    counter = 0
-    unless string_1.evaluated
-      if configuration.summary
-        summary_string = string_1.to_s
-      else
-        puts "****>>" + string_1.to_s
-      end
-    end
-    string_1.evaluated = true
-    group.each do |string_2|
-      next if string_2.evaluated
-      similarity = string_1.to_s.similarity(string_2.to_s)
-      scores = string_1.to_s.scores(string_2.to_s).inspect
-      template = "%5.f %s"
-      bindings = [similarity, string_2, scores]
-      if similarity >= configuration.threshold
-        string_2.evaluated = true
-        counter += 1
-        unless configuration.summary
-          puts template % bindings
-        end
-      end
-    end
-    if counter > 0
-      puts "#{counter} #{summary_string}"
+  line.chomp!
+  next if line == ''
+  lines += 1
+  resolved = false
+  hash.keys.each do |registered_line|
+    score = Similarity.new(line, registered_line).score
+    if score > options[:threshold]
+      hash[registered_line].push({
+        :line => line,
+        :score => score
+      })
+      resolved = true
     end
   end
+  next if resolved
+  hash[line] ||= []
+end
+
+module Template
+
+  class Banner < Struct.new(:lines, :groups, :threshold, :datetime)
+    def to_s
+      format(template, to_h)
+    end
+    def template
+      '
+Total Lines Parsed: %<lines>s
+Total Groups Generated: %<groups>s
+Similarity Theshold at: %<threshold>s
+Generated on: %<datetime>s
+      '
+    end
+  end
+
+  class Group < Struct.new(:number, :percent, :items, :line)
+    def to_s
+      format(template, to_h)
+    end
+    def template
+      'Group %<number>s represents %<percent>s and has %<items>s items similar to: %<line>s'
+    end
+  end
+
+  class Item < Struct.new(:count, :total, :score, :line)
+    def to_s
+      format(template, to_h)
+    end
+    def template
+      '  %<count>s/%<total>s %<score>s  %<line>s'
+    end
+  end
+
+end
+
+require 'isna'
+
+banner = Template::Banner.new
+banner.lines = lines.to_s.to_ansi.yellow.to_s
+banner.groups = hash.keys.size.to_s.to_ansi.yellow.to_s
+banner.threshold = options[:threshold].to_s.to_ansi.yellow.to_s
+banner.datetime = Time.now.to_s.to_ansi.yellow.to_s
+puts banner.to_s
+
+groups = []
+
+hash.each do |category_name, records|
+  groups.push([category_name, records.size])
+end
+
+sorted_groups_by_n_records_asc = groups.sort do |array_a, array_b|
+  number_of_records_in_a = array_a[1]
+  number_of_records_in_b = array_b[1]
+  number_of_records_in_a <=> number_of_records_in_b
+end
+
+sorted_groups_by_n_records_asc.reverse.each_with_index do |key, index|
+  line, records = key[0], hash[key[0]]
+
+  puts ''
+
+  group = Template::Group.new
+  group.percent = ('%2.2f%%' % ((records.size.to_f / lines) * 100)).to_s.to_ansi.red.to_s
+  group.number = (index + 1).to_s.to_ansi.red.to_s
+  group.items = records.size.to_s.to_ansi.cyan.to_s
+  group.line = line.chomp.to_ansi.green.to_s
+  puts group.to_s
+
+  sorted_items_in_group = records.sort do |a, b|
+    a[:score] <=> b[:score]
+  end
+
+  sorted_items_in_group.reverse.each_with_index do |record, index|
+    item = Template::Item.new
+    item.count = (index + 1).to_s.rjust(4, ' ').to_ansi.cyan.to_s
+    item.total = records.size.to_s.ljust(4, ' ').to_ansi.cyan.to_s
+    item.score = ('%4.2f%%' % (record[:score] * 100)).rjust(7, ' ').to_ansi.green.to_s
+    item.line = record[:line]
+    puts item.to_s
+  end
+
 end
 
