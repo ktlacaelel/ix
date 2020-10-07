@@ -81,6 +81,10 @@ OptionParser.new do |opts|
     options[:threshold] = value.to_f
   end
 
+  opts.on('-s', '--summary', 'Print Summarized version.') do |value|
+    options[:summary] = value
+  end
+
 end.parse!
 
 required_options = [:threshold]
@@ -157,12 +161,15 @@ end
 
 require 'isna'
 
+summary_output = []
+detailed_output = []
+
 banner = Template::Banner.new
 banner.lines = lines.to_s.to_ansi.yellow.to_s
 banner.groups = hash.keys.size.to_s.to_ansi.yellow.to_s
 banner.threshold = options[:threshold].to_s.to_ansi.yellow.to_s
 banner.datetime = Time.now.to_s.to_ansi.yellow.to_s
-puts banner.to_s
+summary_output.push(banner.to_s)
 
 groups = []
 
@@ -179,14 +186,15 @@ end
 sorted_groups_by_n_records_asc.reverse.each_with_index do |key, index|
   line, records = key[0], hash[key[0]]
 
-  puts ''
+  detailed_output.push('')
 
   group = Template::Group.new
   group.percent = ('%2.2f%%' % ((records.size.to_f / lines) * 100)).to_s.to_ansi.red.to_s
   group.number = (index + 1).to_s.to_ansi.red.to_s
   group.items = records.size.to_s.to_ansi.cyan.to_s
   group.line = line.chomp.to_ansi.green.to_s
-  puts group.to_s
+  summary_output.push(group.to_s)
+  detailed_output.push(group.to_s)
 
   sorted_items_in_group = records.sort do |a, b|
     a[:score] <=> b[:score]
@@ -198,8 +206,17 @@ sorted_groups_by_n_records_asc.reverse.each_with_index do |key, index|
     item.total = records.size.to_s.ljust(4, ' ').to_ansi.cyan.to_s
     item.score = ('%4.2f%%' % (record[:score] * 100)).rjust(7, ' ').to_ansi.green.to_s
     item.line = record[:line]
-    puts item.to_s
+    detailed_output.push(item.to_s)
   end
 
 end
 
+summary_output.each do |output_line|
+  puts output_line
+end
+
+unless options[:summary]
+  detailed_output.each do |output_line|
+    puts output_line
+  end
+end
