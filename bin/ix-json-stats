@@ -13,7 +13,12 @@ OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [OPTIONS]"
 
   opts.on('-k', '--keys [KEYS]', 'List of keys to parse from json separated by :.') do |value|
-    options[:keys] = value
+    unless value
+      $stderr.puts "Please provide valid --keys got: #{value.inspect}"
+      STDIN.each_line {}
+      exit 1
+    end
+    options[:keys] = value.split(':')
   end
 
   opts.on('-c', '--count [NUMBER]', 'Number of top N items to show.') do |value|
@@ -26,7 +31,7 @@ OptionParser.new do |opts|
 
 end.parse!
 
-required_options = [:keys]
+required_options = []
 required_options.each do |option|
   unless options[option]
     $stderr.puts "Can not run #{option.to_s} was not given."
@@ -35,13 +40,17 @@ required_options.each do |option|
 end
 
 map = {}
-keys = options[:keys].split(':')
 
 STDIN.each_line do |line|
   begin
     object = JSON.parse(line)
+    unless options[:keys]
+      options[:keys] == object.keys
+    end
     object.each do |k, v|
-      next unless keys.include?(k)
+      if options[:keys]
+        next unless options[:keys].include?(k)
+      end
       submap = map[k] ||= {}
       submap[v] ||= 0
       submap[v] += 1
@@ -53,36 +62,56 @@ STDIN.each_line do |line|
   end
 end
 
+def print_value(result, total)
+  percentage = "%2.2f" % (result[:incidents] / total.to_f * 100)
+  h_percentage = (percentage.to_s + '%').rjust(6, ' ').to_ansi.yellow.to_s
+  value = result[:incidents].to_s.rjust(10, ' ').to_ansi.green.to_s
+  key = result[:label]
+  puts "%s %s %s" % [value, h_percentage, key]
+end
+
+class GroupObject
+  attr_accessor :category
+  attr_accessor :results
+  def initialize(category)
+    @category = category
+    @results = []
+  end
+  def add_result(label, incidents)
+    @results.push({ :label => label, :incidents => incidents })
+  end
+  def total
+    results.sum do |result|
+      result[:incidents]
+    end
+  end
+end
+
+def get_group_objects(map)
+  group_objects = []
+
+  map.each do |category, hash|
+    group_object = GroupObject.new(category)
+    hash.each do |k, v|
+      group_object.add_result(k, v)
+    end
+    group_objects.push(group_object)
+  end
+
+  group_objects.sort do |a, b|
+    a.category <=> b.category
+  end
+end
+
 def print_map(map, sample)
-  map.each do |category, stats|
-    values = []
-    total = 0
-
-    counter = 0
-    stats.values.sort.reverse.each do |value_1|
-      stats.each do |key, value_2|
-        if value_1 == value_2
-          counter += 1
-          break if counter > sample
-          total += value_1
-          values.push({ :value => value_1, :key => key })
-        end
-      end
+  get_group_objects(map).each do |group_object|
+    puts "\n#{group_object.category.to_s.to_ansi.cyan.to_s} (#{group_object.total})"
+    group_object.results.sort do |a, b|
+      a[:incidents] <=> b[:incidents]
+    end.reverse.first(sample).each do |result|
+      print_value(result, group_object.total)
     end
-
-    puts ""
-    puts "#{category.to_s.to_ansi.cyan.to_s} (#{total})"
-
-    values.each do |object|
-      percentage = "%2.2f" % (object[:value] / total.to_f * 100)
-      h_percentage = (percentage.to_s + '%').rjust(6, ' ').to_ansi.yellow.to_s
-      value = object[:value].to_s.rjust(10, ' ').to_ansi.green.to_s
-      key = object[:key]
-      puts "%s %s %s" % [value, h_percentage, key]
-    end
-
   end
 end
 
 print_map(map, options[:count])
-
