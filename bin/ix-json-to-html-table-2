@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+
+def tag(name, content)
+  "<#{name}>#{content}</#{name}>"
+end
+
+def row(name, array)
+  array.map do |value|
+    tag(name, value)
+  end * ' '
+end
+
+table_header = false
+
+puts '
+<style>
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+th {
+    background: darkgray;
+    font-color: white;
+    padding: 1mm;
+}
+td {
+    padding: 1mm;
+}
+</style>
+'
+
+STDIN.each_line do |line|
+  begin
+    object           = JSON.parse(line)
+    unless table_header
+      puts '<table>'
+      table_header_row = row('th', object.keys.sort)
+      puts tag('tr', table_header_row)
+      table_header = true
+    end
+    copy = object.keys.sort.map do |key|
+      object[key]
+    end
+    table_body_row = row('td', copy)
+    puts tag('tr', table_body_row)
+  rescue => error
+  end
+end
+
+puts '</table>'
