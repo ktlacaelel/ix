@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = %q{ix-cli}
-  spec.version = "0.0.13"
+  spec.version = "0.0.14"
   spec.date = %q{2020-02-05}
   spec.summary = %q{ix - string manipulation tools}
   spec.author = 'Kazuyoshi Tlacaelel'
@@ -135,6 +135,7 @@ Gem::Specification.new do |spec|
   spec.executables << 'ix-json-to-csv'
   spec.executables << 'ix-json-to-dot'
   spec.executables << 'ix-json-to-html-table'
+  spec.executables << 'ix-json-to-html-table-2'
   spec.executables << 'ix-json-to-ruby-hash'
   spec.executables << 'ix-json-to-table'
   spec.executables << 'ix-json-to-table-2'
