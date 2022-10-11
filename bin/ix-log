@@ -34,7 +34,8 @@ if print_markers
 end
 
 STDIN.each_line do |line|
-  object = get_object(line.chomp!)
+  text = line.chomp!.force_encoding("utf-8")
+  object = get_object(text)
   puts JSON.dump(object)
 end
 
