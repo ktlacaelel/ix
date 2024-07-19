@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
+require 'isna'
+
 # Percentage bar.
 #
 # items  = (1..100).to_a
@@ -14,7 +16,7 @@
 class Percentage
   def initialize(product, divisor, scale = 100)
     @product        = product
-    @scale          = scale - 5
+    @scale          = scale
     @pre_percentage = (divisor * @scale / product).to_f
     @percentage     = (@pre_percentage * 100 / @scale)
     @divisor        = divisor
@@ -29,25 +31,28 @@ class Percentage
   # 0   ~  50   green
   # 50  ~  80   yellow
   # 80  ~  100  red
-  def to_bar(color = true, bar = '|')
-    filling = (bar * @pre_percentage.to_i)
-    padding = 0
+  def to_bar(color = true, bar = '|', label = '')
+    bars = (bar * @pre_percentage.to_f).rjust(@scale, ' ')
     if color
-      if to_i >= 0 and to_i < 50
-        filling = "[0;32;1m" + (bar * @pre_percentage.to_f) + "[0m"
+      if to_i < 33
+        bars = bars.to_ansi.green.to_s
       end
-      if to_i >= 50 and to_i < 80
-        filling = "[0;33;1m" + (bar * @pre_percentage.to_f) + "[0m"
+      if to_i >= 33 and to_i < 66
+        bars = bars.to_ansi.yellow.to_s
       end
-      if to_i >= 80
-        filling = "[0;31;1m" + (bar * @pre_percentage.to_f) + "[0m"
-      end
-      if filling.size > 0
-        padding = 13
+      if to_i >= 66
+        bars = bars.to_ansi.red.to_s
       end
     end
-    bindings = [filling, to_f, '%', @divisor]
-    "[%-#{@scale + padding}s%7.3f%s] %10.2f incidents for" % bindings
+    bindings = {
+      :open       => '[',
+      :close      => ']',
+      :bars       => bars,
+      :percentage => (to_f.round(2).to_s.rjust(5, ' ') + '%').to_ansi.pink.to_s,
+      :divisor    => @divisor.round(2).to_s.rjust(10, ' ').to_ansi.cyan.to_s,
+      :label      => label
+    }
+    format("%<open>s%<bars>s%<close>s %<percentage>s %<divisor>s %<label>s", bindings)
   end
 end
 
@@ -76,13 +81,75 @@ class Array
 
 end
 
+require 'optparse'
+require 'json'
+
+options = {}
+options[:width] = 40
+options[:label] = ''
+options[:char] = '|'
+options[:color] = 'yes'
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-c', '--char [STRING]', 'Char to use to print the percentage bar') do |value|
+    options[:char] = value
+  end
+
+  opts.on('-w', '--width [NUMBER]', 'Chars to use to print the bar.') do |value|
+    options[:width] = value.to_f
+  end
+
+  opts.on('-l', '--label [STRING]', 'Label to use when printing out the layout.') do |value|
+    options[:label] = value
+  end
+
+  opts.on('-o', '--color [yes|no]', 'Weather if we should use ansi colors to print colors') do |value|
+    options[:color] = value
+  end
+
+
+  opts.on('-j', '--json', 'Will parse json keys as var names, and values as numbers') do |value|
+    options[:json] = value
+  end
+
+end.parse!
+
+required_options = [:width, :label, :char, :color]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+if options[:color] == 'yes'
+  options[:color] = true
+else
+  options[:color] = false
+end
+
+if options[:width] < 1
+  $stderr.puts "Width can not be less than 1."
+  exit 1
+end
 
 hash = {}
 
 STDIN.each_line do |line|
-  chunks = line.split(/\s+/)
-  hash[chunks[0]] ||= []
-  hash[chunks[0]] << chunks[1].to_f
+  if options[:json]
+    line = JSON.parse(line)
+    line.each do |key, value|
+      hash[key] ||= []
+      hash[key] << value.to_f
+    end
+  else
+    chunks = line.split(/\s+/)
+    hash[chunks[0]] ||= []
+    hash[chunks[0]] << chunks[1].to_f
+  end
 end
 
 total = 0
@@ -91,12 +158,14 @@ hash.keys.each do |key|
   total += array.product 
 end
 
-hash.keys.each do |key|
+hash.keys.sort do |a, b|
+  hash[a].product <=> hash[b].product
+end.reverse.each do |key|
   array = hash[key]
-  p = Percentage.new(total, array.product, 50)
+  p = Percentage.new(total, array.product, options[:width])
 
   template = "%s %s"
-  bindings = [p.to_bar, key]
+  bindings = [p.to_bar(options[:color], options[:char], options[:label]), key.to_ansi.yellow.to_s]
   puts template % bindings
 end
 
