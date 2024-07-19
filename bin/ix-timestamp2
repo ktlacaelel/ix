@@ -1,14 +1,54 @@
 #!/usr/bin/env ruby
 
-# Expects a timestamp perline
+require 'json'
+require 'isna'
 
-require 'time'
+start = false
+prev  = false
+lineno = 0
+colors = true
 
-STDIN.each do |line|
-  puts '=' * 80
-  orignal_time = line.chomp
-  parsed_time = Time.at(line.chomp.to_i)
-  puts "#{orignal_time} => #{parsed_time}"
-  puts ''
+STDIN.each_line do |line|
+  begin
+    lineno += 1
+    json = JSON.parse(line)
+    timestamp = json['timestamp'].to_f
+    unless start
+      start = timestamp
+      prev  = timestamp
+    end
+
+    object = {
+       :time => Time.at(timestamp).to_s.rjust(20, ' '),
+       :elapsed => format('%1.3f', (timestamp - start)).to_s.rjust(9, ' '),
+       :diff => format('%2.3f', (timestamp - prev)).to_s.rjust(9, ' '),
+       :lineno => (('| ') + (lineno.to_s)).ljust(5, ' '),
+       :message => json['message']
+    }
+
+    if colors
+      object[:time] = object[:time].to_s.to_ansi.cyan.to_s
+      object[:elapsed] = object[:elapsed].to_s.to_ansi.pink.to_s
+
+      if (timestamp - prev) > 1 and (timestamp - prev) < 10
+        object[:diff] = object[:diff].to_s.to_ansi.green.to_s
+      end
+
+      if (timestamp - prev) > 10 and (timestamp - prev) < 50
+        object[:diff] = object[:diff].to_s.to_ansi.yellow.to_s
+      end
+
+      if (timestamp - prev) > 50
+        object[:diff] = object[:diff].to_s.to_ansi.red.to_s
+      end
+
+      object[:lineno] = object[:lineno].to_s.to_ansi.cyan.to_s
+    end
+    
+    puts format("%<time>s %<elapsed>s %<diff>s %<lineno>s  %<message>s", object)
+    prev = timestamp
+  rescue => e
+  # puts e.message
+  end
 end
 
