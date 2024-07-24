@@ -1,3 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-ix scan '\.\w+$' | sed 's/\.//g'
+require 'json'
+
+STDIN.each_line do |line|
+  line.chomp!
+  result = { :ext => File.extname(line), :path => line }
+  puts result.to_json
+end

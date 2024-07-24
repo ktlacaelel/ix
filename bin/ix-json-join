@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-l', '--left-file [FILE]', 'Left file.') do |value|
+    options[:left_file] = value
+  end
+
+  opts.on('-r', '--right-file [FILE]', 'Right file.') do |value|
+    options[:right_file] = value
+  end
+
+  opts.on('-e', '--left-key [JSON_FIELD_NAME]', 'Left key.') do |value|
+    options[:left_key] = value
+  end
+
+  opts.on('-i', '--right-key [JSON_FIELD_NAME]', 'Right key.') do |value|
+    options[:right_key] = value
+  end
+
+  opts.on('-f', '--left-prefix [STRING]', 'Left prefix to use for every field on LEFT json.') do |value|
+    options[:left_prefix] = value
+  end
+
+  opts.on('-g', '--right-prefix [STRING]', 'Right prefix to use for every field on RIGHT json.') do |value|
+    options[:right_prefix] = value
+  end
+
+end.parse!
+
+required_options = [:left_file, :right_file, :left_key, :right_key, :left_prefix, :right_prefix]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+left = []
+right = []
+join = []
+
+File.read(options[:left_file]).each_line do |line|
+  left << JSON.parse(line)
+end
+
+File.read(options[:right_file]).each_line do |line|
+  right << JSON.parse(line)
+end
+
+left.each do |left_item|
+  right.each do |right_item|
+    if left_item[options[:left_key]] == right_item[options[:right_key]]
+      join_object = {}
+      left_item.each do |key, value|
+        join_object[options[:left_prefix] + '_' + key] = value
+      end
+      right_item.each do |key, value|
+        join_object[options[:right_prefix] + '_' + key] = value
+      end
+      join << join_object
+    end
+  end
+end
+
+join.each do |join_item|
+  puts join_item.to_json
+end

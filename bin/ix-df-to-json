@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+# /dev/xvdi       2.9T  1.2T  1.7T  42% /ebs/stage-new
+
+require 'isna'
+require 'json'
+
+reports = []
+
+STDIN.each_line do |line|
+  next if line =~ /Used/
+  chunks = line.chomp.split(/\s+/)
+
+  hash                    = { }
+  hash["device"]          = chunks[0]
+  hash["total_size"]      = chunks[1]
+  hash["space_used"]      = chunks[2]
+  hash["space_available"] = chunks[3]
+  hash["percentage_used"] = chunks[4]
+  hash["mount_point"]     = chunks[5]
+  hash["mount_point"]     = chunks[5]
+  hash["timestamp"]       = Time.now.to_i
+
+  reports << hash
+end
+
+reports.sort do |a, b|
+  pna = a["percentage_used"].scan(/\d+/)[0]
+  pnb = b["percentage_used"].scan(/\d+/)[0]
+  pna.to_i <=> pnb.to_i
+end.reverse.each do |report|
+  puts report.to_json
+end

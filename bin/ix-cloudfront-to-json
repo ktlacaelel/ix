@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+headers = []
+
+STDIN.each_line do |line|
+
+  line.chomp!
+
+  if line =~ /^#Version:/
+    next
+  end
+
+  if line =~ /^#Fields:/
+    fields = line.split(/^#Fields: /)[1..-1][0]
+    headers = fields.split(/\s+/)
+    next
+  end
+
+  values = line.split(/\t/)
+
+  data = {}
+
+  headers.each_with_index do |header, index|
+    data[header] = values[index]
+  end
+
+  puts data.to_json
+  
+end

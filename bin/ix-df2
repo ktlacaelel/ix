@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+# /dev/xvdi       2.9T  1.2T  1.7T  42% /ebs/stage-new
+
+require 'isna'
+
+reports = []
+
+STDIN.each_line do |line|
+  next if line =~ /Used/
+  chunks = line.chomp.split(/\s+/)
+
+  hash                    = { }
+  hash["Device"]          = chunks[0]
+  hash["Total Size"]      = chunks[1]
+  hash["Space Used"]      = chunks[2]
+  hash["Space Available"] = chunks[3]
+  hash["Percentage Used"] = chunks[4]
+  hash["Mount Point"]     = chunks[5]
+
+  reports << hash
+end
+
+reports.sort do |a, b|
+  pna = a["Percentage Used"].scan(/\d+/)[0]
+  pnb = b["Percentage Used"].scan(/\d+/)[0]
+  pna.to_i <=> pnb.to_i
+end.reverse.each do |report|
+  puts ''
+  report.each do |key, value|
+    puts "#{key.ljust(20).to_ansi.green.to_s}: #{value}"
+  end
+  pn = report["Percentage Used"].scan(/\d+/)[0]
+  puts `echo #{pn} 100 | ix gauge`
+end
+
+puts ''
+
+# puts "Report generated on #{Time.now}"
+

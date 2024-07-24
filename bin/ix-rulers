@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+options[:padding] = 5
+options[:count] = 0
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-w', '--width [NUMBER]', 'Width of the horizontal ruler (custom).') do |value|
+    options[:width] = value.to_i
+  end
+
+  opts.on('-p', '--padding [NUMBER]', 'Padding for numbers on the left.') do |value|
+    options[:padding] = value.to_i
+  end
+
+  opts.on('-c', '--count [NUMBER]', 'Count lines starting from.') do |value|
+    options[:count] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:padding, :count]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+class Ruler
+  attr_accessor :length
+  def initialize(length)
+    @length = length
+  end
+
+  # we print the number of the column
+  # in various rows:
+  # for example first row will print:
+  # 00000000000
+  # 00000000011
+  # 12345678901
+  def to_s
+    items = (@length + 1).times.map do |item|
+      item.to_s.rjust(5, '0').chars
+    end
+    items.transpose.map(&:join).join("\n")
+  end
+
+end
+
+if options[:width]
+  Ruler.new(options[:width].to_i).to_s.lines.each do |line|
+    puts (' ' * (options[:padding] + 2)) + line
+  end
+  STDIN.each_line do |line|
+    puts "#{options[:count].to_s.rjust(options[:padding], '0')} | #{line}"
+    options[:count] += 1
+  end
+else
+  lines = []
+  STDIN.each_line do |line|
+    lines << line
+  end
+  exit 0 if lines.empty?
+  options[:width] = lines.map(&:length).max
+  Ruler.new(options[:width].to_i).to_s.lines.each do |line|
+    puts (' ' * (options[:padding] + 2)) + line
+  end
+  lines.each do |line|
+    puts "#{options[:count].to_s.rjust(options[:padding], '0')} |#{line}"
+    options[:count] += 1
+  end
+end
+

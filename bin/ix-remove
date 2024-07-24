@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'isna'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-f', '--file []', 'File with entries to be removed.') do |value|
+    options[:file] = value
+  end
+
+end.parse!
+
+required_options = [:file]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+unless File.exist?(options[:file])
+  $stderr.puts "File #{options[:file]} does not exist."
+  exit 1
+end
+
+inputs = []
+entries = []
+
+
+File.read(options[:file]).each_line do |line|
+  entries << line
+end
+
+STDIN.each_line do |line|
+  inputs << line
+end
+
+(inputs - entries).each do |item|
+  puts item.chomp
+end
+

@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-f', '--field [NAME]', 'Field.') do |value|
+    options[:field] = value
+  end
+
+  opts.on('-m', '--match [REGEX]', 'Match.') do |value|
+    options[:match] = value
+  end
+
+end.parse!
+
+required_options = [:field, :match]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+STDIN.each_line do |line|
+  begin
+    json = JSON.parse(line)
+    if json[options[:field]].to_s =~ /#{options[:match]}/
+      puts line
+    end
+  rescue JSON::ParserError => e
+    $stderr.puts "Error parsing line: #{line}"
+  end
+end
+

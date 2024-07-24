@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+options[:size] = 2
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-s', '--size [NUMBER]', 'Size.') do |value|
+    options[:size] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:size]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+options[:size].times do |i|
+  puts ''
+end
+
+STDIN.each_line do |line|
+  puts (' ' * options[:size]) + line.chomp + (' ' * options[:size])
+end
+
+options[:size].times do |i|
+  puts ''
+end

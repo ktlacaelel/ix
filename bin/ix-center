@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+options[:width] = 40
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-w', '--width [NUMBER]', 'Width.') do |value|
+    options[:width] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:width]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+STDIN.each_line do |line|
+  puts line.chomp.center(options[:width])
+end

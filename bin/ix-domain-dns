@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'resolv'
+require 'json'
+
+STDIN.each_line do |line|
+
+  domain = line.chomp
+
+  begin
+
+    Resolv::DNS.open do |dns|
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::A) do |r|
+        puts ({ :type => 'A', :value => r.address.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::AAAA) do |r|
+        puts ({ :type => 'AAAA', :value => r.address.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::SOA) do |r|
+        puts ({ :type => 'SOA', :value => r.mname.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::NS) do |r|
+        puts ({ :type => 'NS', :value => r.name.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::MX) do |r|
+        puts ({ :type => 'MX', :value => r.exchange.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+      dns.each_resource(domain, Resolv::DNS::Resource::IN::TXT) do |r|
+        puts ({ :type => 'TXT', :value => r.data.to_s, :ttl => r.ttl, :domain => domain }).to_json
+      end
+
+    end
+
+  end
+
+end
+

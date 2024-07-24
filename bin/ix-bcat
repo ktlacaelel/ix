@@ -187,6 +187,9 @@ OptionParser.new do |opts|
     options[:pre] = value
   end
 
+  opts.on('-d', '--dark', 'Dark mode.') do |value|
+    options[:dark] = value
+  end
 
 end.parse!
 
@@ -205,12 +208,19 @@ STDIN.each_line do |line|
 end
 
 if options[:pre]
-  puts '<pre>'
+  if options[:dark]
+    puts "<body style='background-color:#222;'>"
+    puts "<pre style='color:gray;'>"
+  else
+    puts "<body>"
+    puts "<pre>"
+  end
 end
 
 puts Bcat::ANSI.new(data).to_html
 
 if options[:pre]
   puts '</pre>'
+  puts '</body>'
 end
 

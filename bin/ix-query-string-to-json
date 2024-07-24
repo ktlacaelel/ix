@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  line.chomp.split('&').map do |pair|
+    a, b = pair.split('=')
+    puts a
+  end
+end

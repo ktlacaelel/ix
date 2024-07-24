@@ -1,0 +1,217 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+require 'time'
+
+def debug(chunks)
+  chunks.each_with_index do |value, index|
+    puts [index, value].inspect
+  end
+end
+
+def parse_section_0(object, section)
+  chunks = section.split(' ')
+  object[:type] = chunks[0]
+  time = Time.parse(chunks[1])
+  object[:time] = time
+  object[:timestamp] = time.to_f
+  object[:elb] = chunks[2]
+  client, port = chunks[3].split(':')
+  object[:client] = client
+  object[:client_port] = port.to_i
+  client, port = chunks[4].split(':')
+  object[:target] = client
+  object[:target_port] = port.to_i
+  object[:request_processing_time] = chunks[5].to_f
+  object[:target_processing_time] = chunks[6].to_f
+  object[:response_processing_time] = chunks[7].to_f
+  object[:elb_status_code] = chunks[8].to_i
+  object[:target_status_code] = chunks[9].to_i
+  object[:received_bytes] = chunks[10].to_i
+  object[:sent_bytes] = chunks[11].to_i
+  nil
+end
+
+def parse_section_1(object, section)
+  chunks = section.split(' ')
+  object[:http_method] = chunks[0]
+  object[:request_url] = chunks[1]
+  object[:http_protocol] = chunks[2]
+  nil
+end
+
+def parse_section_2(object, section)
+  nil
+end
+
+def parse_section_3(object, section)
+  object[:user_agent] = section
+  nil
+end
+
+def parse_section_4(object, section)
+  chunks = section.split(' ')
+  object[:ssl_cipher] = chunks[0] 
+  object[:ssl_protocol] = chunks[1] 
+  object[:target_group_arn] = chunks[2] 
+  nil
+end
+
+def parse_section_5(object, section)
+  object[:trace_id] = section
+  nil
+end
+
+def parse_section_6(object, section)
+  nil
+end
+
+def parse_section_7(object, section)
+  object[:domain_name] = section
+  nil
+end
+
+def parse_section_8(object, section)
+  nil
+end
+
+def parse_section_9(object, section)
+  object[:chosen_cert_arn] = section
+  nil
+end
+
+def parse_section_10(object, section)
+  chunks = section.split(' ')
+  object[:matched_rule_priority] = chunks[0]
+  time = Time.parse(chunks[1])
+  object[:request_creation_time] = time
+  object[:request_creation_timestamp] = time.to_f
+  nil
+end
+
+def parse_section_11(object, section)
+  object[:actions_executed] = section
+  nil
+end
+
+def parse_section_12(object, section)
+  nil
+end
+
+def parse_section_13(object, section)
+  nil
+end
+
+def parse_section_14(object, section)
+  nil
+end
+
+def parse_section_15(object, section)
+  nil
+end
+
+def parse_section_16(object, section)
+  nil
+end
+
+def parse_section_17(object, section)
+  object[:target_port_list] = section
+  nil
+end
+
+def parse_section_17(object, section)
+  object[:target_port_list] = section
+  nil
+end
+
+def parse_section_18(object, section)
+  nil
+end
+
+def parse_section_19(object, section)
+  object[:target_status_code_list] = section
+  nil
+end
+
+def parse_section_20(object, section)
+  nil
+end
+
+def parse_section_21(object, section)
+  nil
+end
+
+def parse_section_22(object, section)
+  nil
+end
+
+def parse_section_23(object, section)
+  nil
+end
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-d', '--debug', 'Debug.') do |value|
+    options[:debug] = value
+  end
+
+end.parse!
+
+required_options = []
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+# reference:
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#access-log-entry-format
+
+c = 0
+
+# client:
+STDIN.each_line do |line|
+  begin
+  line.chomp!
+  object = {}
+  chunks = line.split('"')
+  debug(chunks) if options[:debug]
+  parse_section_0(object, chunks[0])
+  parse_section_1(object, chunks[1])
+  parse_section_2(object, chunks[2])
+  parse_section_3(object, chunks[3])
+  parse_section_4(object, chunks[4])
+  parse_section_5(object, chunks[5])
+  parse_section_6(object, chunks[6])
+  parse_section_7(object, chunks[7])
+  parse_section_8(object, chunks[8])
+  parse_section_9(object, chunks[9])
+  parse_section_10(object, chunks[10])
+  parse_section_11(object, chunks[11])
+  parse_section_12(object, chunks[12])
+  parse_section_13(object, chunks[13])
+  parse_section_14(object, chunks[14])
+  parse_section_15(object, chunks[15])
+  parse_section_16(object, chunks[16])
+  parse_section_17(object, chunks[17])
+  parse_section_18(object, chunks[18])
+  parse_section_19(object, chunks[19])
+  parse_section_20(object, chunks[20])
+  parse_section_21(object, chunks[21])
+  parse_section_22(object, chunks[22])
+  parse_section_23(object, chunks[23])
+  puts object.to_json
+  rescue => error
+    c += 1
+  end
+end
+
+$stderr.puts "Error count: #{c}" if c > 0

@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-r', '--range [RANGE]', 'Range, for example 1..10') do |value|
+    options[:range] = value
+  end
+
+  opts.on('-l', '--limit [NUMBER]', 'Limit, the max number of times to cycle through the range') do |value|
+    options[:limit] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:range, :limit]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+class Cycle
+  def initialize(range)
+    @range = range
+    @index = -1
+  end
+
+  def next
+    @index += 1
+    @index = 0 if @index >= @range.size
+    @range[@index]
+  end
+end
+
+range = eval(options[:range]).to_a
+cycle = Cycle.new(range)
+
+counter = 0
+
+STDIN.each_line do |line|
+  line.chomp!
+  # puts "#{line} #{cycle.next}"
+  puts cycle.next
+  counter += 1
+  break if options[:limit] && counter >= options[:limit].to_i
+end
+

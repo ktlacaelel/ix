@@ -1,0 +1,120 @@
+#!/usr/bin/env ruby
+
+# ai did not cut it, I had to write this myself..
+# cat file.sql | ruby parse.rb
+
+require 'json'
+
+class Buffer
+  def initialize
+    @buffer = []
+  end
+  def add(line)
+    @buffer << line
+  end
+  def flush
+    @buffer.join("\n")
+  end
+  def reset
+    @buffer = []
+  end
+  def to_s
+    flush
+  end
+end
+
+class Database
+  attr_accessor :name
+  attr_accessor :tables
+  def initialize(name)
+    @name = name
+    @tables = []
+  end
+end
+
+class Table
+  attr_accessor :name
+  attr_accessor :columns
+  def initialize(name)
+    @name = name
+    @columns = []
+  end
+end
+
+class Column
+  attr_accessor :name
+  attr_accessor :type
+  def initialize(name, type)
+    @name = name
+    @type = type
+  end
+end
+# -- Host: localhost    Database: empowerkit_DBnew
+REGEX_DATABASE_1 = /(^USE `)([^`]+)(`;)|(-- Host: [^\s]+Database: )(\w+)(\n)/
+REGEX_DATABASE_2 = /(-- Host: [^\s]+\s+Database: )(\w+)($)/
+REGEX_TABLE_START = /(^CREATE TABLE `)([^`]+)(` \()/
+REGEX_TABLE_END = /(^\)( ENGINE.)(\w+))/
+REGEX_COLUMN = /(^  `)([^`]+)(` )(\w+)([^\n]+)/
+
+database = nil
+parsing_table = false
+buffer = Buffer.new
+
+def get_table_object(string)
+  table_name = string.match(REGEX_TABLE_START)[2]
+  table_columns = []
+  string.scan(REGEX_COLUMN) do |column|
+    table_columns << Column.new(column[1], column[3])
+  end
+  table = Table.new(table_name)
+  table.columns = table_columns
+  table
+end
+
+STDIN.each_line do |line|
+  # line = line.force_encoding('UTF-8')
+  line = line.force_encoding('ISO-8859-1').encode('UTF-8')
+
+  if line =~ REGEX_DATABASE_1
+    database = Database.new($2)
+    next
+  end
+
+  if line =~ REGEX_DATABASE_2
+    database = Database.new($2)
+    next
+  end
+
+  next unless database
+
+  if line =~ REGEX_TABLE_START
+    buffer.reset
+    buffer.add(line.chomp)
+    parsing_table = true
+    next
+  end
+
+  if parsing_table
+    buffer.add(line.chomp)
+    if line =~ REGEX_TABLE_END
+      parsing_table = false
+      get_table_object(buffer.flush).tap do |table|
+        database.tables << table
+      end
+    end
+  end
+
+end
+
+database.tables.each do |table|
+  table.columns.each do |column|
+    object = {
+      :database => database.name,
+      :table => table.name,
+      :column => column.name,
+      :type => column.type
+    }
+    puts object.to_json
+  end
+end
+

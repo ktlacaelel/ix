@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require 'time'
+require 'json'
+
+def parse_s3_log_line(line)
+
+  # Split the log line by spaces, respecting quoted strings
+  parts = line.scan(/"([^"]+)"|(\S+)/).flatten.compact
+
+  {
+    bucket_owner: parts[0],
+    bucket: parts[1],
+    time: parts[2] + parts[3], # Remove the brackets around the time
+    remote_ip: parts[4],
+    requester: parts[5],
+    request_id: parts[6],
+    operation: parts[7],
+    key: parts[8],
+    request_uri: parts[9],
+    http_status: parts[10].to_i,
+    error_code: parts[11],
+    bytes_sent: parts[12].to_i,
+    object_size: parts[13],
+    total_time: parts[14].to_i,
+    turnaround_time: parts[15].to_i,
+    referer: parts[16],
+    user_agent: parts[17],
+    version_id: parts[18]
+  }
+end
+
+# Read from standard input
+ARGF.each_line do |line|
+  parsed_log = parse_s3_log_line(line)
+  puts parsed_log.to_json
+end
+

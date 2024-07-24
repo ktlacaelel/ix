@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+options[:style] = :round
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-s', '--style [STRING]', 'One of [round, square, mysql, double].') do |value|
+    options[:style] = value.to_sym
+  end
+
+end.parse!
+
+required_options = [:style]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+def box(string, style = :round)
+  styles = {
+    round: {
+      top: '╭╮',
+      bottom: '╰╯',
+      side: '│',
+      horizontal: '─'
+    },
+    square: {
+      top: '┌┐',
+      bottom: '└┘',
+      side: '│',
+      horizontal: '─'
+    },
+    double: {
+      top: '╔╗',
+      bottom: '╚╝',
+      side: '║',
+      horizontal: '═'
+    },
+    mysql: {
+      top: '++',
+      bottom: '++',
+      side: '|',
+      horizontal: '-'
+    }
+  }
+  if styles[style].nil?
+    $stderr.puts "Unknown style #{style}"
+    exit 1
+  end
+  s = styles[style]
+  lines = []
+  string.each_line do |line|
+    lines.push(line.chomp)
+  end
+  result = ''
+  max = lines.map { |line| line.size }.sort.last
+  line = (s[:horizontal] * (max + 2))
+  result << "#{s[:top][0]}#{line}#{s[:top][1]}\n"
+  lines.each do |line|
+    line = line.ljust(max)
+    padding_left = ' ' * ((max - line.size) / 2)
+    padding_right = ' ' * (max - line.size - padding_left.size)
+    result << "#{s[:side]} #{padding_left}#{line}#{padding_right} #{s[:side]}\n"
+  end
+  result << "#{s[:bottom][0]}#{line}#{s[:bottom][1]}\n"
+  result
+end
+
+puts box(STDIN.read, options[:style])

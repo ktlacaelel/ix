@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-k', '--key [NAME]', 'Key in json to look for a timestamp.') do |value|
+    options[:key] = value
+  end
+
+end.parse!
+
+required_options = [:key]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+times = []
+distances = []
+previous = nil
+
+STDIN.each_line do |line|
+  object = JSON.parse(line)
+  times << object[options[:key]]
+end
+
+times.sort do |a, b|
+  a <=> b
+end.each do |time|
+  if previous
+    distances << time - previous
+  end
+  previous = time
+end
+
+distances.each do |distance|
+  puts "distance #{distance}"
+end

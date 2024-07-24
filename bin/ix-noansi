@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+STDIN.each_line do |line|
+  puts line.chomp.
+    gsub(/\e\[\d+m/, '').
+    gsub(/\e\[\d+;\d+m/, '').
+    gsub(/\e\[\d+;\d+;\d+m/, '').
+    gsub(/\e\[\d+;\d+;\d+;\d+m/, '')
+end

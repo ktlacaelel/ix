@@ -8,6 +8,7 @@
 #    highlight ix-highlight-match highlight whatever matches a regex
 #
 
+require 'isna'
 
 abort 'No pattern given' if ARGV[0].nil?
 
@@ -16,6 +17,9 @@ trap('SIGINT') { }
 $stdout.sync = true
 
 STDIN.each_line do |line|
-  puts line.gsub(/(#{ARGV[0]})/i) { |x| "[0;31;1m#{$1}[0m" }
+  ARGV.each do |arg|
+    chunks = arg.split(':')
+    puts line.gsub(/(#{chunks[0]})/i) { |x| $1.to_ansi.send(chunks[1].to_sym).to_s }
+  end
 end
 

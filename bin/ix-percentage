@@ -44,12 +44,21 @@ class Percentage
         bars = bars.to_ansi.red.to_s
       end
     end
+
+    output_percentage = (to_f.round(2).to_s.rjust(5, ' ') + '%')
+    output_divisor = @divisor.round(2).to_s.rjust(10, ' ')
+
+    if color
+      output_percentage = output_percentage.to_ansi.pink.to_s
+      output_divisor = output_divisor.to_ansi.cyan.to_s
+    end
+
     bindings = {
       :open       => '[',
       :close      => ']',
       :bars       => bars,
-      :percentage => (to_f.round(2).to_s.rjust(5, ' ') + '%').to_ansi.pink.to_s,
-      :divisor    => @divisor.round(2).to_s.rjust(10, ' ').to_ansi.cyan.to_s,
+      :percentage => output_percentage,
+      :divisor    => output_divisor,
       :label      => label
     }
     format("%<open>s%<bars>s%<close>s %<percentage>s %<divisor>s %<label>s", bindings)
@@ -165,7 +174,13 @@ end.reverse.each do |key|
   p = Percentage.new(total, array.product, options[:width])
 
   template = "%s %s"
-  bindings = [p.to_bar(options[:color], options[:char], options[:label]), key.to_ansi.yellow.to_s]
+
+  if options[:color]
+    bindings = [p.to_bar(options[:color], options[:char], options[:label]), key.to_ansi.yellow.to_s]
+  else
+    bindings = [p.to_bar(options[:color], options[:char], options[:label]), key]
+  end
+
   puts template % bindings
 end
 
