@@ -10,7 +10,7 @@ STDIN.each do |line|
   line_number = chunks[1].to_i
   spacer = file.scan(/^\s*/)[0]
   file.gsub!(/^\s+/, '')
-  unless File.exists? file
+  unless File.exist? file
     puts line
     next
   end

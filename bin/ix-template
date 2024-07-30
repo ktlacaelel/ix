@@ -17,7 +17,7 @@ end
 
 if ARGV[0]
   template = "#{ARGV[0]}"
-  if File.exists?(template)
+  if File.exist?(template)
     template = File.read(template)
   end
 end

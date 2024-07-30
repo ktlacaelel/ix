@@ -149,7 +149,7 @@ end
 $stdout.sync = true
 puts legend
 
-if File.exists?($options[:file])
+if File.exist?($options[:file])
   $options[:current_value] = File.read($options[:file]).to_i
 end
 

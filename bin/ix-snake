@@ -20,6 +20,6 @@ STDIN.each_line do |line|
     padding = padding[1..(padding.size - 1)]
   end
 
-  puts padding + words.map { |word| word.downcase } * '_'
+  puts padding.to_s + words.map { |word| word.downcase } * '_'
 end
 

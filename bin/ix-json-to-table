@@ -1,21 +1,107 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
 require 'json'
-require 'hirb'
+require 'isna'
+require 'optparse'
 
-hashes = []
+options = {}
+options[:orient] = 'top'
 
-STDIN.each_line do |line|
-  if line.include? '}'
-    hash = JSON.parse(line)
-    hashes.push(hash)
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-o', '--orient [STRING]', 'Orientation for headers: top, bottom, both, or none.') do |value|
+    options[:orient] = value
+  end
+
+  opts.on('-s', '--search [STRING]', 'Search for a particular string.') do |value|
+    options[:search] = Regexp.new(value, Regexp::IGNORECASE)
+  end
+
+end.parse!
+
+required_options = [:orient]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
   end
 end
 
-vertical = false
-if ARGV[0] == '-v'
-  vertical = true
+data = []
+
+STDIN.each_line do |line|
+  data << JSON.parse(line)
 end
 
-puts Hirb::Helpers::Table.render(hashes, :resize => false, :vertical => vertical)
+exit if data.empty?
+
+def print_table(data, options)
+  columns = {}
+
+  data.each do |row|
+    row.each do |key, value|
+      columns[key] ||= key.size
+      columns[key] = value.to_s.size if value.to_s.size > columns[key]
+    end
+  end
+
+  config = {
+    :top_left => '╭',
+    :top_right => '╮',
+    :bottom_left => '╰',
+    :bottom_right => '╯',
+    :vertical => '│',
+    :horizontal => '─',
+    :cross => '┼',
+    :top => '┬',
+    :bottom => '┴',
+    :left => '├',
+    :right => '┤'
+  }
+
+  cm = columns.keys.sort.map do |key|
+    s = ''
+    value = columns[key]
+    s << key.ljust(value, ' ')
+    s
+  end
+
+  top_ruler = "#{config[:top_left]}#{config[:horizontal]}#{(cm.map { |s| s.gsub(/./, config[:horizontal]) }).join("#{config[:horizontal]}#{config[:top]}#{config[:horizontal]}")}#{config[:horizontal]}#{config[:top_right]}"
+  bottom_ruler = "#{config[:bottom_left]}#{config[:horizontal]}#{(cm.map { |s| s.gsub(/./, config[:horizontal]) }).join("#{config[:horizontal]}#{config[:bottom]}#{config[:horizontal]}")}#{config[:horizontal]}#{config[:bottom_right]}"
+  middle_ruler = "#{config[:left]}#{config[:horizontal]}#{(cm.map { |s| s.gsub(/./, config[:horizontal]) }).join("#{config[:horizontal]}#{config[:cross]}#{config[:horizontal]}")}#{config[:horizontal]}#{config[:right]}"
+
+  headers = "#{config[:vertical]} " + cm.join(" #{config[:vertical]} ") + " #{config[:vertical]}"
+
+  puts top_ruler
+
+  if options[:orient] == 'top' || options[:orient] == 'both'
+    puts headers
+    puts middle_ruler
+  end
+
+  data.each do |row|
+    rm = columns.keys.sort.map do |key|
+      s = ''
+      value = row[key]
+      if options[:search] =~ value.to_s
+        s << value.to_s.ljust(columns[key], ' ').gsub(options[:search]) { |m| m.to_ansi.green.to_s }
+      else
+        s << value.to_s.ljust(columns[key], ' ')
+      end
+      s
+    end
+    puts "#{config[:vertical]} " + rm.join(" #{config[:vertical]} ") + " #{config[:vertical]}"
+  end
+
+  if options[:orient] == 'bottom' || options[:orient] == 'both'
+    puts middle_ruler
+    puts headers
+  end
+  puts bottom_ruler
+
+  puts "Total: #{data.size} rows"
+end
+
+print_table(data, options)

@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+transposed = {}
+
+STDIN.each_line do |line|
+  data = JSON.parse(line)
+  data.each do |key, value|
+    transposed[key] ||= []
+    transposed[key] << value
+  end
+end
+
+transposed.each do |key, values|
+  values.each do |value|
+    puts({ :column => key, :value => value }.to_json)
+  end
+end
+

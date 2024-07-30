@@ -240,7 +240,7 @@ require 'digest/md5'
 source = ARGV[0]
 target = ARGV[1]
 
-unless File.exists?(source)
+unless File.exist?(source)
   $stderr.puts "File not found: #{source}"
   exit 0
 end

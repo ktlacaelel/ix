@@ -10,9 +10,14 @@ OptionParser.new do |opts|
 
   opts.banner = "Usage: #{$0} [OPTIONS]"
 
-  opts.on('-f', '--field [NAME]', 'Field.') do |value|
+  opts.on('-f', '--field [STRING]', 'Field.') do |value|
     options[:field] = value
   end
+
+  opts.on('-v', '--value [STRING]', 'Field.') do |value|
+    options[:field] = value
+  end
+
 
   opts.on('-m', '--match [REGEX]', 'Match.') do |value|
     options[:match] = value
@@ -20,7 +25,7 @@ OptionParser.new do |opts|
 
 end.parse!
 
-required_options = [:field, :match]
+required_options = [:match]
 required_options.each do |option|
   unless options[option]
     $stderr.puts "Can not run #{option.to_s} was not given."
@@ -28,11 +33,23 @@ required_options.each do |option|
   end
 end
 
+if options[:field].nil? && options[:value].nil?
+  $stderr.puts "Can not run without field or value."
+  exit 1
+end
+
 STDIN.each_line do |line|
   begin
     json = JSON.parse(line)
-    if json[options[:field]].to_s =~ /#{options[:match]}/
-      puts line
+    if options[:field]
+      if json[options[:field]].to_s =~ /#{options[:match]}/
+        puts line
+      end
+    end
+    if options[:value]
+      if json.values.any? { |v| v.to_s =~ /#{options[:match]}/ }
+        puts line
+      end
     end
   rescue JSON::ParserError => e
     $stderr.puts "Error parsing line: #{line}"

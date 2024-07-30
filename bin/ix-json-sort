@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+require 'optparse'
+
+options = {}
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-f', '--field [STRING]', 'Field.') do |value|
+    options[:field] = value
+  end
+
+end.parse!
+
+required_options = [:field]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+objects = []
+
+STDIN.each_line do |line|
+  objects << JSON.parse(line)
+end
+
+objects.sort_by! { |object| object[options[:field]] }.each do |object|
+  puts object.to_json
+end

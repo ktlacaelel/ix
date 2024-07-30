@@ -14,7 +14,7 @@ STDIN.each_line do |stack_line|
   range_right = (line..(line + 5)).to_a
   full_range = (range_left + range_right).sort
 
-  if File.exists?(filepath)
+  if File.exist?(filepath)
     file_line = 0
     File.read(filepath).each_line do |fline|
       file_line += 1

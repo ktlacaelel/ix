@@ -2,7 +2,7 @@
 
 STDIN.each_line do |line|
 
-  if File.exists?(line.chomp)
+  if File.exist?(line.chomp)
     puts "yes #{line.chomp}"
   else
     puts " no #{line.chomp}"
