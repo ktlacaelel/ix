@@ -9,13 +9,13 @@ OptionParser.new do |opts|
 
   opts.banner = "Usage: #{$0} [OPTIONS]"
 
-  opts.on('-f', '--file []', 'File with entries to be removed.') do |value|
-    options[:file] = value
+  opts.on('-r', '--remove [FILEPATH]', 'File with entries that will be removed.') do |value|
+    options[:remove] = value
   end
 
 end.parse!
 
-required_options = [:file]
+required_options = [:remove]
 required_options.each do |option|
   unless options[option]
     $stderr.puts "Can not run #{option.to_s} was not given."
@@ -23,24 +23,24 @@ required_options.each do |option|
   end
 end
 
-unless File.exist?(options[:file])
-  $stderr.puts "File #{options[:file]} does not exist."
+unless File.exist?(options[:remove])
+  $stderr.puts "File #{options[:remove]} does not exist."
   exit 1
 end
 
-inputs = []
-entries = []
+source_list = []
+remove_list = []
 
 
-File.read(options[:file]).each_line do |line|
-  entries << line
+File.read(options[:remove]).each_line do |line|
+  remove_list << line.chomp
 end
 
 STDIN.each_line do |line|
-  inputs << line
+  source_list << line.chomp
 end
 
-(inputs - entries).each do |item|
-  puts item.chomp
+(source_list - remove_list).each do |item|
+  puts item
 end
 

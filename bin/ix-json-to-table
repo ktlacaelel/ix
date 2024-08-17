@@ -6,6 +6,8 @@ require 'optparse'
 
 options = {}
 options[:orient] = 'top'
+options[:transpose] = false
+options[:adjust] = false
 
 OptionParser.new do |opts|
 
@@ -19,6 +21,14 @@ OptionParser.new do |opts|
     options[:search] = Regexp.new(value, Regexp::IGNORECASE)
   end
 
+  opts.on('-t', '--transpose', 'Transponse the table and print the output vertically.') do |value|
+    options[:transpose] = value
+  end
+
+  opts.on('-a', '--adjust', 'Adjust width of tables when in transpose mode.') do |value|
+    options[:adjust] = value
+  end
+
 end.parse!
 
 required_options = [:orient]
@@ -28,14 +38,6 @@ required_options.each do |option|
     exit 1
   end
 end
-
-data = []
-
-STDIN.each_line do |line|
-  data << JSON.parse(line)
-end
-
-exit if data.empty?
 
 def print_table(data, options)
   columns = {}
@@ -104,4 +106,64 @@ def print_table(data, options)
   puts "Total: #{data.size} rows"
 end
 
-print_table(data, options)
+def transpose(hash)
+  transposed = {}
+  hash.each do |key, value|
+    transposed[key] ||= []
+    transposed[key] << value
+  end
+  transposed
+end
+
+if options[:transpose]
+
+  data = []
+
+  STDIN.each_line do |line|
+    begin
+      data << JSON.parse(line)
+    rescue => e
+      $stderr.puts e.message
+    end
+  end
+
+  max_length = 0
+
+  if options[:adjust]
+    data.each do |object|
+      object.values.each do |value|
+        max_length = value.to_s.size if value.to_s.size > max_length
+      end
+    end
+  end
+
+  data.each do |object|
+    transposed = transpose(object)
+    new_data = []
+    transposed.each do |key, values|
+      values.each do |value|
+        new_data.push({ 'column' => key, 'value' => value.to_s.ljust(max_length, ' ')})
+      end
+    end
+    puts ''
+    print_table(new_data, options)
+  end
+
+else
+
+  data = []
+
+  STDIN.each_line do |line|
+    begin
+      data << JSON.parse(line)
+    rescue => e
+      $stderr.puts e.message
+    end
+  end
+
+  exit if data.empty?
+
+  print_table(data, options)
+
+end
+

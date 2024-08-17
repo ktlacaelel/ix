@@ -2,19 +2,22 @@
 
 require 'json'
 
-transposed = {}
-
-STDIN.each_line do |line|
-  data = JSON.parse(line)
-  data.each do |key, value|
+def transpose(hash)
+  transposed = {}
+  hash.each do |key, value|
     transposed[key] ||= []
     transposed[key] << value
   end
+  transposed
 end
 
-transposed.each do |key, values|
-  values.each do |value|
-    puts({ :column => key, :value => value }.to_json)
+STDIN.each_line do |line|
+  data = JSON.parse(line)
+  transposed = transpose(data)
+  transposed.each do |key, values|
+    values.each do |value|
+      puts({ :column => key, :value => value }.to_json)
+    end
   end
 end
 
