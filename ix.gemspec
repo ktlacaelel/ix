@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = %q{ix-cli}
-  spec.version = "0.0.22"
+  spec.version = "0.0.23"
   spec.date = %q{2020-02-05}
   spec.summary = %q{ix - string manipulation tools}
   spec.author = 'Kazuyoshi Tlacaelel'

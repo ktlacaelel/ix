@@ -8,6 +8,7 @@ options = {}
 options[:orient] = 'top'
 options[:transpose] = false
 options[:adjust] = false
+options[:skin] = 'round'
 
 OptionParser.new do |opts|
 
@@ -27,6 +28,10 @@ OptionParser.new do |opts|
 
   opts.on('-a', '--adjust', 'Adjust width of tables when in transpose mode.') do |value|
     options[:adjust] = value
+  end
+
+  opts.on('-i', '--skin [NAME]', 'Change the skin, can be: [round, none, ascii].') do |value|
+    options[:skin] = value
   end
 
 end.parse!
@@ -49,7 +54,9 @@ def print_table(data, options)
     end
   end
 
-  config = {
+  skin = {}
+
+  skin['round'] = {
     :top_left => '╭',
     :top_right => '╮',
     :bottom_left => '╰',
@@ -62,6 +69,64 @@ def print_table(data, options)
     :left => '├',
     :right => '┤'
   }
+
+  skin['none'] = {
+    :top_left => ' ',
+    :top_right => ' ',
+    :bottom_left => ' ',
+    :bottom_right => ' ',
+    :vertical => ' ',
+    :horizontal => ' ',
+    :cross => ' ',
+    :top => ' ',
+    :bottom => ' ',
+    :left => ' ',
+    :right => ' '
+  }
+
+  skin['ascii'] = {
+    :top_left => '+',
+    :top_right => '+',
+    :bottom_left => '+',
+    :bottom_right => '+',
+    :vertical => '|',
+    :horizontal => '-',
+    :cross => '+',
+    :top => '+',
+    :bottom => '+',
+    :left => '+',
+    :right => '+'
+  }
+
+  skin['square'] = {
+    :top_left => '┌',
+    :top_right => '┐',
+    :bottom_left => '└',
+    :bottom_right => '┘',
+    :vertical => '│',
+    :horizontal => '─',
+    :cross => '┼',
+    :top => '┬',
+    :bottom => '┴',
+    :left => '├',
+    :right => '┤'
+  }
+
+  skin['double'] = {
+    :top_left => '╔',
+    :top_right => '╗',
+    :bottom_left => '╚',
+    :bottom_right => '╝',
+    :vertical => '║',
+    :horizontal => '═',
+    :cross => '╬',
+    :top => '╦',
+    :bottom => '╩',
+    :left => '╠',
+    :right => '╣'
+  }
+
+  config = skin[options[:skin]]
 
   cm = columns.keys.sort.map do |key|
     s = ''
