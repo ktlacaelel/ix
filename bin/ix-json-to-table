@@ -30,8 +30,12 @@ OptionParser.new do |opts|
     options[:adjust] = value
   end
 
-  opts.on('-i', '--skin [NAME]', 'Change the skin, can be: [round, none, ascii].') do |value|
+  opts.on('-i', '--skin [NAME]', 'Change the skin, can be: [round, square, none, ascii, double].') do |value|
     options[:skin] = value
+  end
+
+  opts.on('-c', '--count', 'Count, weather if you want a total count of items to be added at the end.') do |value|
+    options[:count] = value
   end
 
 end.parse!
@@ -166,9 +170,13 @@ def print_table(data, options)
     puts middle_ruler
     puts headers
   end
+
   puts bottom_ruler
 
-  puts "Total: #{data.size} rows"
+  if options[:count]
+    puts "Total: #{data.size} rows"
+  end
+
 end
 
 def transpose(hash)
