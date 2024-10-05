@@ -12,7 +12,7 @@ STDIN.each_line do |line|
       puts hash.keys * "\t"
       headers = hash.keys
     end
-    puts hash.values * "\t"
+    puts hash.values.map { |v| v.to_s.gsub(/\t/, ' ') } * "\t"
   rescue => error
   end
 end

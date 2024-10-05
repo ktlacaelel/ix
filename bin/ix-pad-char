@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+options[:pad] = 4
+options[:fill] = '─'
+options[:char] = '['
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-c', '--char [STRING]', 'Char to use as padding target.') do |value|
+    options[:char] = value
+  end
+
+  opts.on('-f', '--fill [STRING]', 'Char to use as filling.') do |value|
+    options[:fill] = value
+  end
+
+  opts.on('-p', '--pad [NUMBER]', 'Padd to add to the fill.') do |value|
+    options[:pad] = value.to_i
+  end
+
+end.parse!
+
+required_options = [:char, :pad, :fill]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
+items = []
+
+STDIN.each_line do |line|
+  items << line.chomp
+end
+
+max_index_of_char = items.map { |item| item.index(options[:char]) }.max
+char = options[:char]
+
+if char == ' '
+  char = '\s'
+end
+
+if char == '['
+  char = '\['
+end
+
+REGEX = Regexp.new("^([^#{char}]+)(#{char})(.*$)")
+
+# puts "Max index of char: #{max_index_of_char}"
+
+items.each do |item|
+  next unless REGEX.match(item)
+  item.gsub(REGEX) do |match|
+    puts "#{($1) + ($2).rjust((max_index_of_char) - $1.size + options[:pad], options[:fill])}#{$3}"
+  end
+end
+

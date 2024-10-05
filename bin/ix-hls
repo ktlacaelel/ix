@@ -10,6 +10,29 @@
 
 require 'isna'
 
+require 'optparse'
+
+options = {}
+options[:delimiter] = ':'
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-d', '--delimiter [STRING]', 'Delimiter.') do |value|
+    options[:delimiter] = value
+  end
+
+end.parse!
+
+required_options = [:delimiter]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
+
 abort 'No pattern given' if ARGV[0].nil?
 
 trap('SIGINT') { }
@@ -17,9 +40,11 @@ trap('SIGINT') { }
 $stdout.sync = true
 
 STDIN.each_line do |line|
+  line.chomp!
   ARGV.each do |arg|
-    chunks = arg.split(':')
-    puts line.gsub(/(#{chunks[0]})/i) { |x| $1.to_ansi.send(chunks[1].to_sym).to_s }
+    chunks = arg.split(options[:delimiter])
+    line.gsub!(/(#{chunks[0]})/i) { |x| $1.to_ansi.send(chunks[1].to_sym).to_s }
   end
+  puts line
 end
 

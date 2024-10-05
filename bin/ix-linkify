@@ -3,6 +3,28 @@
 require 'net/http'
 require 'nokogiri'
 require 'open-uri'
+require 'optparse'
+
+options = {}
+options[:output] = 'text'
+
+OptionParser.new do |opts|
+
+  opts.banner = "Usage: #{$0} [OPTIONS]"
+
+  opts.on('-o', '--output [STRING]', 'Output.') do |value|
+    options[:output] = value
+  end
+
+end.parse!
+
+required_options = [:output]
+required_options.each do |option|
+  unless options[option]
+    $stderr.puts "Can not run #{option.to_s} was not given."
+    exit 1
+  end
+end
 
 class Mock
   attr_accessor :title
@@ -10,13 +32,19 @@ end
 
 counter = 0
 
+if options[:output] == 'html'
+  puts "<ol>"
+end
+
 STDIN.each_line do |line|
   next if line.chomp == ''
   counter += 1
   url = line.chomp
   begin
-    doc = Nokogiri::HTML(open(url))
+    data = Net::HTTP.get(URI.parse(url))
+    doc = Nokogiri::HTML(data)
   rescue => e
+    $stderr.puts e.message
     doc = Mock.new
     doc.title = url
   end
@@ -24,12 +52,26 @@ STDIN.each_line do |line|
     doc = Mock.new
     doc.title = url
   end
-  template = "%s - %s\n%s\n\n"
-  title = doc.title
-  title.chomp!
-  title.gsub!(/\n/, '')
-  title.gsub!(/^\s+/, '')
-  title.gsub!(/\s+$/, '')
-  bindings = [counter, title, url]
-  puts template % bindings
+  if options[:output] == 'text'
+    template = "%s - %s\n%s\n\n"
+    title = doc.title
+    title.chomp!
+    title.gsub!(/\n/, '')
+    title.gsub!(/^\s+/, '')
+    title.gsub!(/\s+$/, '')
+    bindings = [counter, title, url]
+    puts template % bindings
+  elsif options[:output] == 'html'
+    title = doc.title
+    title.chomp!
+    title.gsub!(/\n/, '')
+    title.gsub!(/^\s+/, '')
+    title.gsub!(/\s+$/, '')
+    # bindings = [counter, title, url, url]
+    puts "<li><a href='#{url}'>#{title}</a></li>"
+  end
+end
+
+if options[:output] == 'html'
+  puts "</ol>"
 end

@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+STDIN.each_line do |line|
+  next if line.strip.empty?
+  begin
+    object = JSON.parse(JSON.parse(line))
+    puts object.to_json
+  rescue => e
+    $stderr.puts "Error: #{e.message}"
+  end
+end
