@@ -5,6 +5,7 @@ require 'json'
 require 'optparse'
 
 options = {}
+options[:behavior] = 'add'
 
 OptionParser.new do |opts|
 
@@ -18,14 +19,17 @@ OptionParser.new do |opts|
     options[:field] = value
   end
 
-
   opts.on('-m', '--match [REGEX]', 'Match.') do |value|
     options[:match] = value
   end
 
+  opts.on('-b', '--behavior [STRING]', 'Behavior can be either [add|remove]') do |value|
+    options[:behavior] = ['add', 'remove'].include?(value) ? value : 'add'
+  end
+
 end.parse!
 
-required_options = [:match]
+required_options = [:match, :behavior]
 required_options.each do |option|
   unless options[option]
     $stderr.puts "Can not run #{option.to_s} was not given."
@@ -41,14 +45,27 @@ end
 STDIN.each_line do |line|
   begin
     json = JSON.parse(line)
-    if options[:field]
-      if json[options[:field]].to_s =~ /#{options[:match]}/
-        puts line
+    if options[:behavior] == 'add'
+      if options[:field]
+        if json[options[:field]].to_s =~ /#{options[:match]}/
+          puts line
+        end
       end
-    end
-    if options[:value]
-      if json.values.any? { |v| v.to_s =~ /#{options[:match]}/ }
-        puts line
+      if options[:value]
+        if json.values.any? { |v| v.to_s =~ /#{options[:match]}/ }
+          puts line
+        end
+      end
+    else
+      if options[:field]
+        if json[options[:field]].to_s !~ /#{options[:match]}/
+          puts line
+        end
+      end
+      if options[:value]
+        if json.values.none? { |v| v.to_s =~ /#{options[:match]}/ }
+          puts line
+        end
       end
     end
   rescue JSON::ParserError => e
